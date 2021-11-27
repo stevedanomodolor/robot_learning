@@ -1,0 +1,15 @@
+# .yaml config file
+#
+# The PID gains and controller settings must be saved in a yaml file that gets loaded
+# to the param server via the roslaunch file (ball_shooter_control.launch).
+ball_shooter:
+  #publish all joint states
+  # creates the /joint_states topic necessary in Ros
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+  #Effort controller -------------------------------------------
+  pan_joint_position_controller:
+    type: position_controllers/JointPositionController
+    joint: pan_joint
+    pid: {p: 10.0, i: 0.0, d: 0.0}

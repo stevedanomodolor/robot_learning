@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <param name="robot_description"   command="xacro --inorder '$(find ball_shooter_sim)/urdf/ball_shooter.xacro'" />
+
+  <!-- Load config file -->
+  <rosparam file="$(find ball_shooter_sim)/config/ball_shooter.yaml" command="load"/>
+<!-- robot state publisher -->
+  <node name="robot_state_publisher_ball_shooter" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <param name="publish_frequency" type="double" value="50.0"/>
+    <param name="ignore_timestamp" type="bool" value="true" />
+    <param name="tf_prefix" type="string" value="moving_cube"/>
+    <remap from="/joint_states" to="/ball_shooter/joint_states"/>
+
+  </node>
+
+  <!-- Spawn all the controller -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+    args="--namespace=/ball_shooter
+                              joint_state_controller
+                              pan_joint_position_controller
+                              --shutdown-timeout 3">
+</node>
+
+</launch>

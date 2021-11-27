@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+
+<robot name="ball_shooter">
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////base link//////////////////////////////////////////////////////////////
+
+<link name="base_link">
+
+     <visual>
+       <geometry>
+   <cylinder length="0.01" radius="0.2"/> // TODO change heigth here
+       </geometry>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+       <material name="yellow">
+         <color rgba="1 1 0 1"/>
+       </material>
+     </visual>
+
+     <collision>
+       <geometry>
+   <cylinder length="0.03" radius="0.2"/>
+       </geometry>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+     </collision>
+     <inertial>
+   <mass value="1"/>
+   <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+     </inertial>
+   </link>
+
+/////////////////////////////////////////gazebo refernce base_link/////////////////////////////////
+
+<gazebo reference="base_link">
+    <material>Gazebo/Red</material>
+</gazebo>
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////joint base pan_joint(pan_link)/////////////////////////////////////////////////
+<joint name="pan_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="pan_link"/>
+    <origin xyz="0 0 0.1"/>
+    <axis xyz="0 0 1" />
+    <limit effort="300" velocity="0.1" lower="-3.14" upper="3.14"/>
+    <dynamics damping="50" friction="1"/>
+  </joint>
+
+/////////////////////////////////////////////pan_joint////////////////////////////////////////////
+<link name="pan_link">
+    <visual>
+      <geometry>
+    <cylinder length="0.1" radius="0.2"/> // TODO change heigth here
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0."/>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+	<cylinder length="0.1" radius="0.22"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.09"/>
+    </collision>
+    <inertial>
+	<mass value="1"/>
+	<inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+  /////////////////////////////////////////gazebo refernce pan_joint/////////////////////////////////
+
+  <gazebo reference="base_link">
+      <material>Gazebo/Red</material>
+  </gazebo>
+
+
+</robot>

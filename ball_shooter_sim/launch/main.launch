@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+    <arg name="robot" default="machines"/>
+    <arg name="debug" default="false"/>
+    <arg name="gui" default="true"/>
+    <arg name="verbose" default="true"/>
+    <arg name="pause" default="false"/>  <!-- Start Gazebo with a blank world -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find ball_shooter_sim)/worlds/model.world"/>
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="gui" value="$(arg gui)" />
+        <arg name="paused" value="$(arg pause)"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+    </include>
+
+    <include file="$(find ball_shooter_sim)/launch/spawn_bin.launch"/>
+    <include file="$(find ball_shooter_sim)/launch/spawn_ball.launch"/>
+    <include file="$(find ball_shooter_sim)/launch/spawn_ball_shooter.launch"/>
+    <include file="$(find ball_shooter_sim)/launch/ball_shooter_control.launch"/>
+
+
+</launch>

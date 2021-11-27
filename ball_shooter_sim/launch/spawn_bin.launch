@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="sdf_file_location" default="$(find ball_shooter_sim)/models/bin/model.sdf"/>
+    <arg name="x" default="1"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0."/>
+    <arg name="roll" default="0.0"/>
+  <arg name="pitch" default="0.0"/>
+  <arg name="yaw" default="0.0"/>
+  <arg name="robot_name" default="bin"/>
+
+
+    <node name="$(arg robot_name)" pkg="gazebo_ros" type="spawn_model" output="screen"
+    args="-sdf -file $(arg sdf_file_location) -model $(arg robot_name) -x $(arg x) -y $(arg y) -z $(arg z)" />
+
+</launch>
