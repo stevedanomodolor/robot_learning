@@ -20,7 +20,8 @@ from gazebo_msgs.srv import SetModelState
 class BallShooterRLUtils(object):
     def __init__(self):
         #define pfixed pitch value
-        self.pitch = 0.785398
+        self.pitch = rospy.get_param("/ball_shooter/fixed_pitch") #min turn
+
         rospy.Subscriber("ball_shooter/joint_states", JointState, self.ball_shooter_joints_callback)
         #sunscribers to the bin/ball/ball_shooter odom
         rospy.Subscriber("/ball/odom", Odometry, self.ball_odom_callback)
@@ -133,11 +134,13 @@ class BallShooterRLUtils(object):
     def set_init_pose(self):
         self.check_publisher_connection
         self.move_pan_tilt(0)
+    def get_pan_joint(self):
+        return self.ball_shooter_joint[0]
 
     def move_pan_to_view_bin(self):
         #state is the for points of the bin TODO: change
         while(0):#not object_info.object_in_frame):
-            joint_position_value = self.ball_shooter_joint[0] #pan joint value
+            joint_position_value = self.get_pan_joint() #pan joint value
             rotation_direction = 1 # rotation direction
             #extrem
             if((joint_position_value+0.05)> 3.14):

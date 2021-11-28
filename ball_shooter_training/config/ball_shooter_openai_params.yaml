@@ -5,3 +5,19 @@ ball_shooter: #namespace
   #bin: used to place the bin in a random position evetytime we reset the world
   max_xy_: 3 #maximum position of the xy value
   min_xy_: 0.8 #maximum position of the xy value: this should be higer that the robot size to prevent collision with it
+
+  #Algorithms parameters
+  alpha: 0.1
+  gamma: 0.8
+  epsilon: 0.9
+  epsilon_discount: 0.999 # 1098 eps to reach 0.1
+  nepisodes: 2
+  nsteps: 1
+
+  n_actions: 2 # number of actions vel_cmd/ angle in deg
+  low_vel_cmd: 0 # minimum speed
+  high_vel_cmd: 100 # maximum launch speed
+  low_incre_cmd: -180 # move left 180 degrees
+  high_incre_cmd: 180
+
+  fixed_pitch:  0.785398 # 45 degress

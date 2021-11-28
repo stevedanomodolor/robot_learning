@@ -26,15 +26,22 @@ reg = register(
 class BallShooterEnv(gym.Env):
 
     def __init__(self):
-
-
-
         #set parameters
         self.pan_tilt_running_step = rospy.get_param("/ball_shooter/pan_tilt_running_step")
         self.launch_running_step = rospy.get_param("/ball_shooter/launch_running_step")
         self.max_xy_ = rospy.get_param("/ball_shooter/max_xy_")
         self.min_xy_ = rospy.get_param("/ball_shooter/min_xy_")
+        self.n_actions = rospy.get_param("/ball_shooter/n_actions")
+        self.low_vel_cmd = rospy.get_param("/ball_shooter/low_vel_cmd") #minimum speed
+        self.high_vel_cmd = rospy.get_param("/ball_shooter/high_vel_cmd") #minimum speed
+        self.low_incre_cmd = rospy.get_param("/ball_shooter/low_incre_cmd") #min turn
+        self.high_incre_cmd = rospy.get_param("/ball_shooter/high_incre_cmd") #max turn
 
+        #action_space
+        self.action_space = spaces.Box(
+            np.array([self.low_vel_cmd,self.low_incre_cmd]).astype(np.float32),
+            np.array([self.high_vel_cmd,self.high_incre_cmd]).astype(np.float32),
+        )# vel_cmd increment
         # ball shooter object
         self.ball_shooter_object = BallShooterRLUtils()
 
@@ -42,27 +49,41 @@ class BallShooterEnv(gym.Env):
         self.gazebo = GazeboConnection()
         self.controllers_list = ['joint_state_controller','pan_joint_position_controller']
         self.controllers_object = ControllersConnection(namespace="ball_shooter")
-
-        self._seed()
-
+        self.seed()
 
 
-    def _seed(self, seed=None): #overriden function
+
+
+    def seed(self, seed=None): #overriden function
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _step(self,action):
+    def step(self,action):
         # given the action selected by the learning algorithm
         #action is a array of 2, [vel_cmd, pan_angle(deg)]
 
         self.gazebo.unpauseSim()
+        time.sleep(2)
+
         #we rotate the robot first until we find the bin TODO: fix other code
         state = self.ball_shooter_object.get_state()
 
         #get robot state-
         # rotate pan tilt, specfied rotation of the disred pose with respect to the origin
+        #important change this in the real robot
         rad = np.deg2rad(action[1])
-        self.ball_shooter_object.move_pan_tilt(rad)
+        current_pan_joint = self.ball_shooter_object.get_pan_joint()
+        if((current_pan_joint+rad) > 3.14):
+            pan_command = (current_pan_joint+rad) - 3.14
+            pan_command_ = -3.14 + pan_command
+        elif((current_pan_joint+rad) < -3.14):
+            pan_command = (current_pan_joint+rad) + 3.14
+            pan_command_ = 3.14 + pan_command
+        else:
+            pan_command_ = current_pan_joint+rad
+
+
+        self.ball_shooter_object.move_pan_tilt(pan_command_)
         time.sleep(self.pan_tilt_running_step)
         #launch the ball at a specific initial speed (should be in m/s)
         self.ball_shooter_object.launch_ball(vel_cmd = action[0])
@@ -72,10 +93,11 @@ class BallShooterEnv(gym.Env):
         reward = self.ball_shooter_object.get_reward_for_observation()
         info = {}
         return state, reward, done, info
-    def _reset(self):
+    def reset(self):
         #Pause the sim
         rospy.loginfo("Pausing SIM..")
         self.gazebo.unpauseSim()
+        time.sleep(2)
         #resetting the simulation
         rospy.loginfo("Resetting SIM..")
         self.gazebo.resetSim()

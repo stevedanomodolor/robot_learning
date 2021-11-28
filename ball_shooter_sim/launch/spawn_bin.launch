@@ -3,8 +3,8 @@
   <arg name="sdf_file_location" default="$(find ball_shooter_sim)/models/bin/model.sdf"/>
     <arg name="x" default="1"/>
     <arg name="y" default="0"/>
-    <arg name="z" default="0."/>
-    <arg name="roll" default="0.0"/>
+    <arg name="z" default="0.06"/>
+    <arg name="roll" default="1.570683"/>
   <arg name="pitch" default="0.0"/>
   <arg name="yaw" default="0.0"/>
   <arg name="robot_name" default="bin"/>

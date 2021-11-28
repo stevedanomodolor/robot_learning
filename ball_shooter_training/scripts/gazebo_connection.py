@@ -6,7 +6,7 @@ from gazebo_msgs.msg import ODEPhysics
 from gazebo_msgs.srv import SetPhysicsProperties, SetPhysicsPropertiesRequest
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Vector3
-
+import time
 class GazeboConnection():
 
     def __init__(self):
@@ -24,6 +24,7 @@ class GazeboConnection():
         self.set_physics = rospy.ServiceProxy(service_name, SetPhysicsProperties)
         self.init_values()
         # We always pause the simulation, important for legged robots learning
+        time.sleep(2)
         self.pauseSim()
 
     def pauseSim(self):
