@@ -20,4 +20,4 @@ ball_shooter: #namespace
   low_incre_cmd: -180 # move left 180 degrees
   high_incre_cmd: 180
 
-  fixed_pitch:  0.785398 # 45 degress
+  fixed_pitch:  0.35 # 45 degress
