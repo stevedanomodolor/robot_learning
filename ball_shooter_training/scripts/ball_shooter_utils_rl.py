@@ -67,6 +67,12 @@ class BallShooterRLUtils(object):
         #TODO add
         self.object_info = object_tracked_info()
         self.object_state = None
+        # while self.object_state is None and not rospy.is_shutdown():
+        #     try:
+        #         self.object_state = rospy.wait_for_message("/object_location", object_tracked_info, timeout==1.0)
+        #         rospy.loginfo("Current /object_location READY ==>" + str(self.object_state))
+        #     except:
+        #         rospy.logerr("Current Current /object_location not ready yet, retrying for getting /object_location")
 
         rospy.loginfo("ALL SENSORS READY")
 
@@ -135,7 +141,7 @@ class BallShooterRLUtils(object):
         self.check_publisher_connection
         self.move_pan_tilt(0)
     def get_pan_joint(self):
-        return self.ball_shooter_joint[0]
+        return self.ball_shooter_joint.position[0]
 
     def move_pan_to_view_bin(self):
         #state is the for points of the bin TODO: change
@@ -163,8 +169,14 @@ class BallShooterRLUtils(object):
         else:
             return False
     def get_object_state(self):
-        #TODO remove
-        return [1,1,1,1] #self.object_info.points
+        #TODO
+        while(not self.object_info.object_in_frame):
+            rospy.loginfo("not Found object")
+        rospy.loginfo("Found object")
+
+
+
+        return self.object_info.points
 
     def get_state(self):
         if(0): #not self.bin_in_view()): # TODO fix
@@ -204,7 +216,7 @@ class BallShooterRLUtils(object):
         return done
     def get_reward_for_observation(self):
         #check if the ball is inside the area of the bin base
-        radius = (0.83941+0.03)-0.7166
+        radius = 0.012#(0.83941+0.02-0.7166
         dx = (self.ball_odom.pose.pose.position.x-self.bin_odom.pose.pose.position.x)
         dy = (self.ball_odom.pose.pose.position.y-self.bin_odom.pose.pose.position.y)
         square_dist = dx**2 + dy**2

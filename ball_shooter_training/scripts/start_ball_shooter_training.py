@@ -50,6 +50,9 @@ if __name__ == '__main__':
     epsilon_discount = rospy.get_param("/ball_shooter/epsilon_discount")
     nepisodes = rospy.get_param("/ball_shooter/nepisodes")
     nsteps = rospy.get_param("/ball_shooter/nsteps")
+
+    qlearn = qlearn.QLearn(actions=range(env.action_space.n),
+                alpha=Alpha, gamma=Gamma, epsilon=Epsilon)
      # Initialises the algorithm that we are going to use for learning
     initial_epsilon = 0
     start_time = time.time()
@@ -66,41 +69,44 @@ if __name__ == '__main__':
         done = False
 
         #initialize the environment
-        # state = env.reset()
+        state = env.reset()
         for i in range(nsteps):
             # choose a random actions
-            # action = 0# todo how we choose action
-            #
+            action = qlearn.chooseAction(state) # todo how we choose action
+            #if qlearn
             # #execute ction in the environment and get feedback
-            # rospy.loginfo("###################### Start Step...["+str(i)+"]")
+            rospy.loginfo("###################### Start Step...["+str(i)+"]")
             # rospy.loginfo("Action to Perform >> "+str(action))
-            # state, reward,done,info = env.steo(action)
-            # rospy.loginfo("END Step...")
-            # rospy.loginfo("Reward ==> " + str(reward))
+            state, reward,done,info = env.step(action)
+            rospy.loginfo("END Step...")
+            rospy.loginfo("Reward ==> " + str(reward))
             # cumulated_reward+=reward
             # if(highest_reward < cumulated_reward):
             #     highest_reward = culmulated_reward
             #
             # #make the algorithm learn here
-            #
-            #
+            rospy.logwarn("############### state we were=>" + str(state))
+            rospy.logwarn("############### action that we took=>" + str(action))
+            rospy.logwarn("############### reward that action gave=>" + str(reward))
+            qlearn.learn(state, action, reward, state)
+
             # #publsh culmulated reward
             # culmulated_reward_msg.data = cumulated_reward
-            # reward_pub.publish(culmulated_reward_msg)
+            reward_pub.publish(reward)
             #
             # if(done):
             #     break
             rospy.loginfo("###################### END Step...["+str(i)+"]")
         m, s = divmod(int(time.time() - start_time), 60)
         h, m = divmod(m, 60)
-        alpha = 0
-        gamma = 0
-        epsilon = 0
+        # alpha = 0
+        # gamma = 0
+        # epsilon = 0
         episode_reward_msg.data = cumulated_reward
         episode_reward_pub.publish(episode_reward_msg)
-        rospy.loginfo( ("EP: "+str(x+1)+" - [alpha: "+str(round(alpha,2))+" - gamma: "+str(round(gamma,2))+" - epsilon: "+str(round(epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
+        rospy.loginfo( ("EP: "+str(x+1)+" - [alpha: "+str(round(qlearn.alpha,2))+" - gamma: "+str(round(qlearn.gamma,2))+" - epsilon: "+str(round(qlearn.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
         # plotter.plot(env)
-    rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(alpha)+"|"+str(gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |"))
+    rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(qlearn.alpha)+"|"+str(qlearn.gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |"))
 
     l = last_time_steps.tolist()
     l.sort()
@@ -108,4 +114,4 @@ if __name__ == '__main__':
     #print("Parameters: a="+str)
     # rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
 
-    # env.close()
+    env.close()

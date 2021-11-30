@@ -73,3 +73,7 @@ Step 5  launch
 **important**
 in any terminal you want to use this you nned to acitvate the oyhthon evn
 source ~/python3_ws/py3venv/bin/activate
+
+
+TODO:
+Adjust bin size 
