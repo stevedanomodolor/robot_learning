@@ -37,7 +37,7 @@ if __name__ == '__main__':
     env = wrappers.Monitor(env, outdir, force=True)
     rospy.loginfo("Monitor Wrapper started")
     #plot
-    # plotter = LivePlot(outdir)
+    plotter = LivePlot(outdir)
 
     last_time_steps = numpy.ndarray(0)
 
@@ -94,8 +94,8 @@ if __name__ == '__main__':
             # culmulated_reward_msg.data = cumulated_reward
             reward_pub.publish(reward)
             #
-            # if(done):
-            #     break
+            if(done):
+                break
             rospy.loginfo("###################### END Step...["+str(i)+"]")
         m, s = divmod(int(time.time() - start_time), 60)
         h, m = divmod(m, 60)
@@ -105,7 +105,7 @@ if __name__ == '__main__':
         episode_reward_msg.data = cumulated_reward
         episode_reward_pub.publish(episode_reward_msg)
         rospy.loginfo( ("EP: "+str(x+1)+" - [alpha: "+str(round(qlearn.alpha,2))+" - gamma: "+str(round(qlearn.gamma,2))+" - epsilon: "+str(round(qlearn.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
-        # plotter.plot(env)
+        plotter.plot(env)
     rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(qlearn.alpha)+"|"+str(qlearn.gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |"))
 
     l = last_time_steps.tolist()

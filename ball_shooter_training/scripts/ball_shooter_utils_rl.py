@@ -206,6 +206,23 @@ class BallShooterRLUtils(object):
             print("Service call failed: " +str(e))
             action_completed = False
         return action_completed
+    def set_ball_location(self, joint_angle):
+        action_completed = False
+        ball_state_msg = ModelState()
+        ball_state_msg.model_name = 'bin'
+        ball_state_msg.pose = self.get_bin_pose()
+        ball_state_msg.pose.position.x = 0.06*math.cos(joint_angle)
+        ball_state_msg.pose.position.y = 0.06*math.sin(joint_angle)
+        ball_state_msg.pose.position.y = 0.15
+        try:
+            set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+            resp = set_state( ball_state_msg )
+            action_completed = True
+
+        except rospy.ServiceException as e:
+            print("Service call failed: " +str(e))
+            action_completed = False
+        return action_completed
 
     def observation_check(self):
         height = self.ball_odom.pose.pose.position.z

@@ -89,6 +89,8 @@ class BallShooterEnv(gym.Env):
         #     pan_command_ = 3.14 + pan_command
         # else:
         #     pan_command_ = current_pan_joint+rad
+        self.ball_shooter_object.set_ball_location(rad)
+
 
 
         self.ball_shooter_object.move_pan_tilt(rad)
