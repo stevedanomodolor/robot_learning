@@ -76,4 +76,6 @@ source ~/python3_ws/py3venv/bin/activate
 
 
 TODO:
-Adjust bin size 
+Adjust bin size
+adjust dimenstion of robot based on guillium new values
+define bin workspace with minomum velcoty which is 7

@@ -19,6 +19,7 @@
     <include file="$(find ball_shooter_sim)/launch/spawn_ball_shooter.launch"/>
     <include file="$(find ball_shooter_sim)/launch/ball_shooter_control.launch"/>
     <include file="$(find ball_shooter_sim)/launch/spawn_ball.launch"/>
+    <include file="$(find ball_shooter_sim)/launch/spawn_camera.launch"/>
 
 
 </launch>

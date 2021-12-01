@@ -28,23 +28,25 @@
 
 <!--***************************Variables***************************-->
 <xacro:property name="base_link_length" value="0.02" />
-<xacro:property name="base_link_radius" value="0.2" />
+<xacro:property name="base_link_radius" value="0.1" />
 
 <xacro:property name="pan_link_length" value="0.02" />
-<xacro:property name="pan_link_radius" value="0.2" />
+<xacro:property name="pan_link_radius" value="0.1" />
 <xacro:property name="camera_link_height" value="0.2" />
 <xacro:property name="camera_link_width" value="0.2" />
 <xacro:property name="camera_link_hegth" value="0.01" />
 
 <xacro:property name="tilt_link_length" value="0.4" />
 <xacro:property name="tilt_link_radius" value="0.04" />
-<xacro:property name="ball_suport_height" value="0.03" />
-<xacro:property name="ball_suport_width" value="0.06" />
+<xacro:property name="ball_suport_height" value="0.035" />
+<xacro:property name="ball_suport_width" value="0.05" />
 
 
 <!--***************************Variables***************************-->
 
 <!--***************************Links***************************-->
+<!-- <link name="world" /> -->
+
 <!-- base_link -->
 <link name="base_link">
   <visual>
@@ -58,7 +60,7 @@
   </visual>
   <collision>
     <geometry>
-      <cylinder length="${base_link_length+0.02}" radius="${base_link_radius}"/>
+      <cylinder length="${base_link_length}" radius="${base_link_radius}"/>
     </geometry>
     <origin rpy="0 0 0" xyz="0 0 0"/>
   </collision>
@@ -73,16 +75,16 @@
     <geometry>
       <cylinder length="${pan_link_length}" radius="${pan_link_radius}"/>
     </geometry>
-    <origin rpy="0 0 0" xyz="0 0 0."/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
     <material name="blue">
       <color rgba="0 0 1 1"/>
     </material>
   </visual>
   <collision>
     <geometry>
-      <cylinder length="${pan_link_length}" radius="${pan_link_radius+0.02}"/>
+      <cylinder length="${pan_link_length}" radius="${pan_link_radius}"/>
     </geometry>
-    <origin rpy="0 0 0" xyz="0 0 0.09"/>
+    <origin rpy="0 0 0" xyz="0 0 0.0"/>
   </collision>
   <inertial>
     <mass value="1"/>
@@ -90,7 +92,7 @@
   </inertial>
 </link>
 <!-- Support ball -->
-<!-- <link name="ball_support_link">
+<link name="ball_support_link">
   <origin xyz="0 0 ${ball_suport_height/2}" rpy="0 0 0" />
   <visual>
     <origin xyz="0 0 ${ball_suport_height/2}" rpy="0 0 0" />
@@ -113,37 +115,43 @@
     iyy="0.00041666666666666675" iyz="0.0"
     izz="0.000166667"/>
     </inertial>
-</link> -->
+</link>
 <!-- camera_link -->
-<link name="camera_link">
-  <origin xyz="0 0 0.05" rpy="0 0 0" />
+<!-- <link name="camera_link">
+  <origin xyz="0 0 0.025" rpy="0 0 0" />
   <visual>
-    <origin xyz="0 0 0.05" rpy="0 0 0" />
+    <origin xyz="0 0 0.025" rpy="0 0 0" />
     <geometry>
-      <box size="0.1 0.1 0.1"/>
+      <box size="0.05 0.05 0.05"/>
     </geometry>
     <material name="blue"/>
   </visual>
   <collision>
-    <origin xyz="0 0 0.05" rpy="0 0 0" />
+    <origin xyz="0 0 0.025" rpy="0 0 0" />
     <geometry>
-      <box size="0.1 0.1 0.1"/>
+      <box size="0.05 0.05 0.05"/>
     </geometry>
   </collision>
   <inertial>
-    <origin xyz="0 0 0.05" rpy="0 0 0" />
-    <mass value="0.1"/>
+    <origin xyz="0 0 0.025" rpy="0 0 0" />
+    <mass value="0"/>
   <inertia
     ixx="0.000166667" ixy="0.0" ixz="0.0"
     iyy="0.000166667" iyz="0.0"
     izz="0.000166667"/>
     </inertial>
-</link>
+</link> -->
 <!-- dummy_camera_link -->
-<link name="dummy_camera_link">
-</link>
+<!-- <link name="dummy_camera_link">
+</link> -->
 <!--***************************Links***************************-->
 <!--***************************Joints***************************-->
+
+<!-- <joint name="world_to_base_link=" type="fixed">
+     <parent link="world"/>
+     <child link="base_link"/>
+    <origin xyz="0 0 0.01"/>
+</joint> -->
 <!-- pan_joint -->
 <joint name="pan_joint" type="revolute">
   <parent link="base_link"/>
@@ -154,44 +162,49 @@
   <dynamics damping="50" friction="1"/>
 </joint>
 <!-- camera_joint -->
-<joint name="camera_joint" type="fixed">
+<!-- <joint name="camera_joint" type="fixed">
   <parent link="pan_link"/>
   <child link="camera_link"/>
   <origin rpy="0 0 0" xyz="0.055 0.0 0.015"/>
   <axis xyz="0 0 0" />
-</joint>
-<!-- ball_suport_link -->
-<!-- <joint name="ball_support_joint" type="fixed">
-  <parent link="pan_link"/>
-  <child link="ball_support_link"/>
-  <origin rpy="0 0 0" xyz="0.2 0 0.015"/>
+</joint> -->
+
+<!-- <joint name="camera_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="camera_link"/>
+  <origin rpy="0 0 0" xyz="0.135 0.0 0.015"/>
   <axis xyz="0 0 0" />
 </joint> -->
-<!-- dummy_camera_joint -->
-<joint name="dummy_camera_joint" type="fixed">
-  <parent link="camera_link"/>
-  <child link="dummy_camera_link"/>
-  <origin rpy="0 0 0" xyz="0 0 0.05"/>
+<!-- ball_suport_link -->
+<joint name="ball_support_joint" type="fixed">
+  <parent link="pan_link"/>
+  <child link="ball_support_link"/>
+  <origin rpy="0 0 0" xyz="0.06 0 0.015"/>
   <axis xyz="0 0 0" />
 </joint>
+<!-- dummy_camera_joint -->
+<!-- <joint name="dummy_camera_joint" type="fixed">
+  <parent link="camera_link"/>
+  <child link="dummy_camera_link"/>
+  <origin rpy="0 0 0" xyz="0 0 0.025"/>
+  <axis xyz="0 0 0" />
+</joint> -->
 <!--***************************Joints***************************-->
 <!--***************************Gazebo configuration***************************-->
 <!-- base_link -->
 <gazebo reference="base_link">
   <material>Gazebo/Red</material>
-  <turnGravityOff>True</turnGravityOff>
 </gazebo>
 <!-- pan_link -->
 <gazebo reference="pan_link">
     <material>Gazebo/Green</material>
 </gazebo>
 <!-- dummy_camera_link -->
-<gazebo reference="dummy_camera_link">
+<!-- <gazebo reference="dummy_camera_link">
   <sensor type="camera" name="camera1">
     <update_rate>30</update_rate>
     <always_on>1</always_on>
     <visualize>true</visualize>
-  <!-- <pose>0 0 0.05 0 0 0</pose> -->
   <camera name="head">
     <horizontal_fov>1.047</horizontal_fov>
     <image>
@@ -211,9 +224,7 @@
     <imageTopicName>image_raw</imageTopicName>
     <cameraInfoTopicName>camera_info</cameraInfoTopicName>
     <frameName>camera_link_optical</frameName>
-    <!-- setting hackBaseline to anything but 0.0 will cause a misalignment
-      between the gazebo sensor image and the frame it is supposed to
-      be attached to -->
+
     <hackBaseline>0.0</hackBaseline>
     <distortionK1>0.0</distortionK1>
     <distortionK2>0.0</distortionK2>
@@ -226,7 +237,7 @@
     <focalLength>0.0</focalLength>
   </plugin>
   </sensor>
-</gazebo>
+</gazebo> -->
 <!--***************************Gazebo configuration***************************-->
 <!--***************************Transmissions***************************-->
 <transmission name="pan_joint_trans">
