@@ -92,7 +92,7 @@ class BallShooterEnv(gym.Env):
         time.sleep(self.pan_tilt_running_step)
         #adjust ball position to make sure it is on the support
         self.ball_shooter_object.set_ball_location(rad)
-        time.sleep(3)
+        time.sleep(5)
         #launch the ball at a specific initial speed (should be in m/s)
         self.ball_shooter_object.launch_ball(vel_cmd = current_action[0])
         time.sleep(self.launch_running_step)
