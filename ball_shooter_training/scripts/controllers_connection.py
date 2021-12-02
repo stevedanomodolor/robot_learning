@@ -1,15 +1,16 @@
 #!/usr/bin/env python
+############################################################
+#####    Stevedan Ogochukwu Omodolor, November 2021    #####
+#####Implementation function to connect controller      ####
+############################################################
 
 import rospy
 from controller_manager_msgs.srv import SwitchController, SwitchControllerRequest, SwitchControllerResponse
-
 class ControllersConnection():
-
     def __init__(self, namespace):
 
         self.switch_service_name = '/'+namespace+'/controller_manager/switch_controller'
         self.switch_service = rospy.ServiceProxy(self.switch_service_name, SwitchController)
-
     def switch_controllers(self, controllers_on, controllers_off, strictness=1):
         """
         Give the controllers you wan to switch on or off.
@@ -44,7 +45,6 @@ class ControllersConnection():
             print (self.switch_service_name+" service call failed")
 
             return None
-
     def reset_controllers(self, controllers_reset):
         """
         We turn on and off the given controllers
@@ -68,7 +68,6 @@ class ControllersConnection():
             rospy.logdebug("result_off_ok==>" + str(result_off_ok))
 
         return reset_result
-
     def reset_ball_shooter_joint_controllers(self):
         controllers_reset = ['joint_state_controller',
                              'pan_joint_position_controller']

@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+############################################################
+#####    Stevedan Ogochukwu Omodolor, November 2021    #####
+#####Implementation of the gym ai  class for the        ####
+##### ball shotter                                      ####
+############################################################
 import gym
 import rospy
 import time
@@ -9,14 +15,13 @@ import random
 from gym import utils, spaces
 from gazebo_connection import GazeboConnection
 from controllers_connection import ControllersConnection
-
 from gym.utils import seeding
 from gym.envs.registration import register
-
 from geometry_msgs.msg import Point
 from tf.transformations import euler_from_quaternion
 from ball_shooter_utils_rl import BallShooterRLUtils
 
+#register the environment to openai
 reg = register(
     id='BallShooterEnv-v0',
     entry_point='ball_shooter_env:BallShooterEnv',
@@ -24,13 +29,17 @@ reg = register(
     )
 
 class BallShooterEnv(gym.Env):
-
     def __init__(self):
-        #set parameters
+        # obtain parameters
         self.pan_tilt_running_step = rospy.get_param("/ball_shooter/pan_tilt_running_step")
         self.launch_running_step = rospy.get_param("/ball_shooter/launch_running_step")
-        self.max_xy_ = rospy.get_param("/ball_shooter/max_xy_")
-        self.min_xy_ = rospy.get_param("/ball_shooter/min_xy_")
+        self.max_x_ = rospy.get_param("/ball_shooter/max_x_")
+        self.min_x_ = rospy.get_param("/ball_shooter/min_x_")
+        self.max_y_ = rospy.get_param("/ball_shooter/max_y_")
+        self.min_y_ = rospy.get_param("/ball_shooter/min_y_")
+        #calculations based on the minimum and maximum ball speed
+        # self.max_y_ = abs((math.tan(1.173) * self.max_x_)- 0.17) #half of the focal length - radius of the bin+0.03
+        # self.min_y_ = abs((math.tan(1.173) * self.min_x_)- 0.17)
         self.n_actions = rospy.get_param("/ball_shooter/n_actions")
         self.low_vel_cmd = rospy.get_param("/ball_shooter/low_vel_cmd") #minimum speed
         self.high_vel_cmd = rospy.get_param("/ball_shooter/high_vel_cmd") #minimum speed
@@ -38,44 +47,33 @@ class BallShooterEnv(gym.Env):
         self.high_incre_cmd = rospy.get_param("/ball_shooter/high_incre_cmd") #max turn
         self.n_incre_angle = rospy.get_param("/ball_shooter/n_incre_angle") #max turn
         self.n_incre_vel = rospy.get_param("/ball_shooter/n_incre_vel") #max turn
-
-        #action_space
+        # defining action_space
         # self.action_space = spaces.Box(
         #     np.array([self.low_vel_cmd,self.low_incre_cmd]).astype(np.float32),
         #     np.array([self.high_vel_cmd,self.high_incre_cmd]).astype(np.float32),
         # )# vel_cmd increment
-
         self.action_space = spaces.Discrete(self.n_incre_angle*self.n_incre_vel)
-
-
-                # ball shooter object
+        # ball shooter object
         self.ball_shooter_object = BallShooterRLUtils()
-
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
+        # initialize controller
         self.controllers_list = ['joint_state_controller','pan_joint_position_controller']
         self.controllers_object = ControllersConnection(namespace="ball_shooter")
         self.seed()
-
-
-
 
     def seed(self, seed=None): #overriden function
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def step(self,action):
-        # given the action selected by the learning algorithm
-        #action is a array of 2, [vel_cmd, pan_angle(deg)]
-
+        #unpauseSim simulation
         self.gazebo.unpauseSim()
         time.sleep(2)
-
-
-        #we rotate the robot first until we find the bin TODO: fix other code
+        #Get state
         state = self.ball_shooter_object.get_state()
+        # convert discrete action to action to send to robot [vel_cmd pan_joint]
         current_action = self.convert_action_space_2_robot_action(action)
-
         #get robot state-
         # rotate pan tilt, specfied rotation of the disred pose with respect to the origin
         #important change this in the real robot
@@ -89,20 +87,22 @@ class BallShooterEnv(gym.Env):
         #     pan_command_ = 3.14 + pan_command
         # else:
         #     pan_command_ = current_pan_joint+rad
-        self.ball_shooter_object.set_ball_location(rad)
-
-
-
+        #move joint
         self.ball_shooter_object.move_pan_tilt(rad)
         time.sleep(self.pan_tilt_running_step)
+        #adjust ball position to make sure it is on the support
+        self.ball_shooter_object.set_ball_location(rad)
+        time.sleep(3)
         #launch the ball at a specific initial speed (should be in m/s)
         self.ball_shooter_object.launch_ball(vel_cmd = current_action[0])
         time.sleep(self.launch_running_step)
+        # pause simulations
         self.gazebo.pauseSim()
         done = self.ball_shooter_object.observation_check()
         reward = self.ball_shooter_object.get_reward_for_observation()
         info = {}
         return state, reward, done, info
+
     def reset(self):
         #Pause the sim
         rospy.loginfo("Pausing SIM..")
@@ -118,24 +118,50 @@ class BallShooterEnv(gym.Env):
         rospy.loginfo("Setting initial position")
         self.ball_shooter_object.set_init_pose()
         #randonly place the bin in the environment TODO: check if this is done every step it reset
-        x = random.uniform(self.min_xy_, self.max_xy_)
-        y = random.uniform(self.min_xy_, self.max_xy_)
+        cord = self.generate_random_bin_position()
+        x = cord[0]
+        y = cord[1]
         rospy.loginfo("Setting at location ==> x: " + str(x) + " y: " + str(y))
-        #self.ball_shooter_object.set_bin_location(x=x,y=y)
-
+        self.ball_shooter_object.set_bin_location(x=x,y=y)
         #check that all subscribers and Publishers work
         rospy.loginfo("check_all_systems_subscribers_publishers_services_ready...")
         #self.ball_shooter_object.check_all_sensors_ready()
         self.ball_shooter_object.check_publisher_connection()
         self.ball_shooter_object.check_all_services()
-
         rospy.loginfo("Pausing simulation...")
         state = self.gazebo.pauseSim()
         # get the current state
         state = self.ball_shooter_object.get_state()
         return state
 
-
+    def generate_random_bin_position(self):
+        #generate a number between 1 or 2
+        triangle = random.randint(1,2)
+        #define coordinates of the two triangles
+        A = [0,0]
+        B = [0,0]
+        C = [0,0]
+        if triangle == 1:
+            A = [self.min_x_, -self.min_y_]
+            B = [self.max_x_, self.max_y_]
+            C = [self.min_x_, self.min_y_]
+        if triangle == 2:
+            A = [self.min_x_, -self.min_y_]
+            B = [self.max_x_, self.max_y_]
+            C = [self.max_x_, -self.max_y_]
+        # generate a random point in the traingle choosen
+        return self.point_on_triangle(A,B,C)
+    def point_on_triangle(self, A,B,C):
+        """
+        Random point on the triangle with vertices A, B and C.
+        """
+        x, y = random.random(), random.random()
+        q = abs(x - y)
+        s, t, u = q, 0.5 * (x + y - q), 1 - 0.5 * (q + x + y)
+        return (
+            s * A[0] + t * B[0] + u * C[0],
+            s * A[1] + t * B[1] + u * C[1],
+        )
     def convert_action_space_2_robot_action(self, action_space):
         action = [0, 0] # vel_cmd pan
         if action_space == 0:

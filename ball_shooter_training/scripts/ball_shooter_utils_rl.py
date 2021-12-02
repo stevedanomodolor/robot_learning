@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-
+############################################################
+#####    Stevedan Ogochukwu Omodolor, November 2021    #####
+#####Implementation of the functions to interact with  ####
+##### gazebo                                           ####
+############################################################
 import time
 import rospy
 import math
@@ -15,8 +19,7 @@ from tf.transformations import euler_from_quaternion
 from ball_shooter_training.msg import object_tracked_info
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
-
-
+# Class to interact with gazebo
 class BallShooterRLUtils(object):
     def __init__(self):
         #define pfixed pitch value
@@ -37,7 +40,6 @@ class BallShooterRLUtils(object):
         self.check_all_services()
         self.check_all_sensors_ready() #TODO fix when alrady active
         self.check_publisher_connection()
-
     #check all sensor ready
     def check_all_sensors_ready(self):
         #pan joint
@@ -75,7 +77,6 @@ class BallShooterRLUtils(object):
         #         rospy.logerr("Current Current /object_location not ready yet, retrying for getting /object_location")
 
         rospy.loginfo("ALL SENSORS READY")
-
     def check_publisher_connection(self):
         rate = rospy.Rate(10) #10hz
         while(self._ball_shooter_pan_publisher.get_num_connections() == 0 and not rospy.is_shutdown()):
@@ -103,7 +104,6 @@ class BallShooterRLUtils(object):
                 pass
                 rospy.logerr("activate_launch_pub Publisher Connected")
         rospy.loginfo("All Publishers READY")
-
     #callbacks
     def ball_shooter_joints_callback(self, data):
         self.ball_shooter_joint = data
@@ -115,10 +115,28 @@ class BallShooterRLUtils(object):
         self.ball_shooter_odom = data
     def object_location_callback(self, data):
         self.object_info = data
+    # get pose value
     def get_pan_joint(self):
         return self.ball_shooter_joint.position[0]
     def get_bin_pose(self):
         return self.bin_odom.pose.pose
+    def get_object_state(self):
+        #TODO
+        while(not self.object_info.object_in_frame):
+            rospy.loginfo("not Found object")
+        rospy.loginfo("Found object")
+
+
+
+        return self.object_info.points
+    def get_state(self):
+        if(0): #not self.bin_in_view()): # TODO fix
+            object_state = self.move_pan_to_view_bin()
+        else:
+            object_state = self.get_object_state()
+        return object_state
+    def get_pan_joint(self):
+        return self.ball_shooter_joint.position[0]
     # actions
     def move_pan_tilt(self, position):
         joint_position = Float64()
@@ -132,7 +150,7 @@ class BallShooterRLUtils(object):
         ball_linear_velocity.linear.x = vel_cmd*(math.cos(yaw)*zAdjust)
         ball_linear_velocity.linear.y = vel_cmd*(math.sin(yaw)*zAdjust)
         ball_linear_velocity.linear.z = vel_cmd*math.sin(self.pitch)
-        rospy.loginfo(str(ball_linear_velocity))
+        #rospy.loginfo(str(ball_linear_velocity))
         self.set_ball_vel_cmd.publish(ball_linear_velocity)
         dummy_boolean = Bool()
         dummy_boolean.data = True
@@ -140,56 +158,6 @@ class BallShooterRLUtils(object):
     def set_init_pose(self):
         self.check_publisher_connection
         self.move_pan_tilt(0)
-    def get_pan_joint(self):
-        return self.ball_shooter_joint.position[0]
-
-    def move_pan_to_view_bin(self):
-        #state is the for points of the bin TODO: change
-        while(0):#not object_info.object_in_frame):
-            joint_position_value = self.get_pan_joint() #pan joint value
-            rotation_direction = 1 # rotation direction
-            #extrem
-            if((joint_position_value+0.05)> 3.14):
-                #rotate the other direction
-                #joint_position_value.data= joint_position_value.data-0.05;
-                rotation_direction = -1
-            elif((joint_position_value-0.05)<-3.14):
-                #rotate in the other direction
-                #joint_position_value.data= joint_position_value.data+0.05;
-                rotation_direction = 1
-            joint_position_value = joint_position_value+(0.05*rotation_direction)
-            #move the pan until the bin is detected
-            time.sleep(2)
-            self.move_pan_tilt(joint_position_value)
-        return self.get_object_state()
-
-    def bin_in_view(self):
-        if(self.object_info.object_in_frame):
-            return True
-        else:
-            return False
-    def get_object_state(self):
-        #TODO
-        while(not self.object_info.object_in_frame):
-            rospy.loginfo("not Found object")
-        rospy.loginfo("Found object")
-
-
-
-        return self.object_info.points
-
-    def get_state(self):
-        if(0): #not self.bin_in_view()): # TODO fix
-            object_state = self.move_pan_to_view_bin()
-        else:
-            object_state = self.get_object_state()
-        return object_state
-
-    def check_all_services(self):
-        rospy.loginfo("Resetting /gazebo/set_model_state server")
-        rospy.wait_for_service("/gazebo/set_model_state")
-        rospy.loginfo("All server Ready")
-
     def set_bin_location(self, x,y):
         action_completed = False
         bin_state_msg = ModelState()
@@ -209,11 +177,11 @@ class BallShooterRLUtils(object):
     def set_ball_location(self, joint_angle):
         action_completed = False
         ball_state_msg = ModelState()
-        ball_state_msg.model_name = 'bin'
+        ball_state_msg.model_name = 'ball'
         ball_state_msg.pose = self.get_bin_pose()
         ball_state_msg.pose.position.x = 0.06*math.cos(joint_angle)
         ball_state_msg.pose.position.y = 0.06*math.sin(joint_angle)
-        ball_state_msg.pose.position.y = 0.15
+        ball_state_msg.pose.position.z = 0.2
         try:
             set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
             resp = set_state( ball_state_msg )
@@ -223,7 +191,34 @@ class BallShooterRLUtils(object):
             print("Service call failed: " +str(e))
             action_completed = False
         return action_completed
-
+    def move_pan_to_view_bin(self):
+        #state is the for points of the bin TODO: change
+        while(0):#not object_info.object_in_frame):
+            joint_position_value = self.get_pan_joint() #pan joint value
+            rotation_direction = 1 # rotation direction
+            #extrem
+            if((joint_position_value+0.05)> 3.14):
+                #rotate the other direction
+                #joint_position_value.data= joint_position_value.data-0.05;
+                rotation_direction = -1
+            elif((joint_position_value-0.05)<-3.14):
+                #rotate in the other direction
+                #joint_position_value.data= joint_position_value.data+0.05;
+                rotation_direction = 1
+            joint_position_value = joint_position_value+(0.05*rotation_direction)
+            #move the pan until the bin is detected
+            time.sleep(2)
+            self.move_pan_tilt(joint_position_value)
+        return self.get_object_state()
+    def bin_in_view(self):
+        if(self.object_info.object_in_frame):
+            return True
+        else:
+            return False
+    def check_all_services(self):
+        rospy.loginfo("Resetting /gazebo/set_model_state server")
+        rospy.wait_for_service("/gazebo/set_model_state")
+        rospy.loginfo("All server Ready")
     def observation_check(self):
         height = self.ball_odom.pose.pose.position.z
         if height < 0.06:
@@ -233,7 +228,7 @@ class BallShooterRLUtils(object):
         return done
     def get_reward_for_observation(self):
         #check if the ball is inside the area of the bin base
-        radius = 0.012#(0.83941+0.02-0.7166
+        radius = 0.14#(0.83941+0.02-0.7166
         dx = (self.ball_odom.pose.pose.position.x-self.bin_odom.pose.pose.position.x)
         dy = (self.ball_odom.pose.pose.position.y-self.bin_odom.pose.pose.position.y)
         square_dist = dx**2 + dy**2

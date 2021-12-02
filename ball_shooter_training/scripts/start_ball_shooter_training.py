@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+############################################################
+#####    Stevedan Ogochukwu Omodolor, November 2021    #####
+#####Implementation of the reinforcement learning       ####
+#####                                                   ####
+############################################################
 import qlearn
 from gym import wrappers
 import gym
@@ -80,6 +85,9 @@ if __name__ == '__main__':
             state, reward,done,info = env.step(action)
             rospy.loginfo("END Step...")
             rospy.loginfo("Reward ==> " + str(reward))
+            rospy.loginfo("state ==> " + str(state))
+            rospy.loginfo("done ==> " + str(done))
+
             # cumulated_reward+=reward
             # if(highest_reward < cumulated_reward):
             #     highest_reward = culmulated_reward

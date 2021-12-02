@@ -3,8 +3,10 @@ ball_shooter: #namespace
   pan_tilt_running_step: 4 #amount of time the control will be executed
 
   #bin: used to place the bin in a random position evetytime we reset the world
-  max_xy_: 3 #maximum position of the xy value
-  min_xy_: 0.8 #maximum position of the xy value: this should be higer that the robot size to prevent collision with it
+  max_x_: 5 #maximum position of the xy value
+  min_x_: 3 #maximum position of the xy value: this should be higer that the robot size to prevent collision with it
+  max_y_: 1.6 #maximum position of the xy value
+  min_y_: 2.3 #maximum position of the xy value: this should be higer that the robot size to prevent collision with it
 
   #Algorithms parameters
   alpha: 0.1
