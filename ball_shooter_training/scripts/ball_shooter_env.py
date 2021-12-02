@@ -37,6 +37,8 @@ class BallShooterEnv(gym.Env):
         self.min_x_ = rospy.get_param("/ball_shooter/min_x_")
         self.max_y_ = rospy.get_param("/ball_shooter/max_y_")
         self.min_y_ = rospy.get_param("/ball_shooter/min_y_")
+        self.fixed_pitch = rospy.get_param("/ball_shooter/fixed_pitch")
+
         #calculations based on the minimum and maximum ball speed
         # self.max_y_ = abs((math.tan(1.173) * self.max_x_)- 0.17) #half of the focal length - radius of the bin+0.03
         # self.min_y_ = abs((math.tan(1.173) * self.min_x_)- 0.17)
@@ -52,7 +54,7 @@ class BallShooterEnv(gym.Env):
         #     np.array([self.low_vel_cmd,self.low_incre_cmd]).astype(np.float32),
         #     np.array([self.high_vel_cmd,self.high_incre_cmd]).astype(np.float32),
         # )# vel_cmd increment
-        self.action_space = spaces.Discrete(self.n_incre_angle*self.n_incre_vel)
+        self.action_space = spaces.Discrete(self.n_actions)
         # ball shooter object
         self.ball_shooter_object = BallShooterRLUtils()
         # stablishes connection with simulator
@@ -88,17 +90,17 @@ class BallShooterEnv(gym.Env):
         # else:
         #     pan_command_ = current_pan_joint+rad
         #move joint
-        self.ball_shooter_object.move_pan_tilt(rad)
-        time.sleep(self.pan_tilt_running_step)
+        #self.ball_shooter_object.move_pan_tilt(rad)
+        #time.sleep(self.pan_tilt_running_step)
         #adjust ball position to make sure it is on the support
-        self.ball_shooter_object.set_ball_location(rad)
+        self.ball_shooter_object.set_ball_location(0)
         time.sleep(5)
         #launch the ball at a specific initial speed (should be in m/s)
         self.ball_shooter_object.launch_ball(vel_cmd = current_action[0])
         time.sleep(self.launch_running_step)
         # pause simulations
         self.gazebo.pauseSim()
-        done = self.ball_shooter_object.observation_check()
+        done = True #self.ball_shooter_object.observation_check()
         reward = self.ball_shooter_object.get_reward_for_observation()
         info = {}
         return state, reward, done, info
@@ -118,9 +120,12 @@ class BallShooterEnv(gym.Env):
         rospy.loginfo("Setting initial position")
         self.ball_shooter_object.set_init_pose()
         #randonly place the bin in the environment TODO: check if this is done every step it reset
-        cord = self.generate_random_bin_position()
-        x = cord[0]
-        y = cord[1]
+        # cord = self.generate_random_bin_position()
+        # x = cord[0]
+        # y = cord[1]
+        #version 1 training fix bin location to themiddle fo the scrren
+        x = 3.1
+        y = 0
         rospy.loginfo("Setting at location ==> x: " + str(x) + " y: " + str(y))
         self.ball_shooter_object.set_bin_location(x=x,y=y)
         #check that all subscribers and Publishers work
@@ -164,90 +169,100 @@ class BallShooterEnv(gym.Env):
         )
     def convert_action_space_2_robot_action(self, action_space):
         action = [0, 0] # vel_cmd pan
-        if action_space == 0:
-            action[0] = 8
-            action[1] =  0
-        elif action_space == 1:
-            action[0] = 8
-            action[1] =-30
-        elif action_space == 2:
-            action[0] = 8
-            action[1] =-20
-        elif action_space == 3:
-            action[0] = 8
-            action[1] =-10
-        elif action_space == 4:
-            action[0] = 8
-            action[1] = 10
-        elif action_space == 5:
-            action[0] = 8
-            action[1] = 20
-        elif action_space == 6:
-            action[0] = 8
-            action[1] = 30
-        elif action_space == 7:
-            action[0] = 12
-            action[1] =  0
-        elif action_space == 8:
-            action[0] = 12
-            action[1] =-30
-        elif action_space == 9:
-            action[0] = 12
-            action[1] =-20
-        elif action_space == 10:
-            action[0] = 12
-            action[1] =-10
-        elif action_space == 11:
-            action[0] = 12
-            action[1] = 10
-        elif action_space == 12:
-            action[0] = 12
-            action[1] = 20
-        elif action_space == 13:
-            action[0] = 12
-            action[1] = 30
-        elif action_space == 14:
-            action[0] =16
-            action[1] =  0
-        elif action_space == 15:
-            action[0] =16
-            action[1] =-30
-        elif action_space == 16:
-            action[0] =16
-            action[1] =-20
-        elif action_space == 17:
-            action[0] =16
-            action[1] =-10
-        elif action_space == 18:
-            action[0] =16
-            action[1] = 10
-        elif action_space == 19:
-            action[0] =16
-            action[1] = 20
-        elif action_space == 20:
-            action[0] =16
-            action[1] = 30
-        elif action_space == 21:
-            action[0] =20
-            action[1] =  0
-        elif action_space == 22:
-            action[0] =20
-            action[1] =-30
-        elif action_space == 23:
-            action[0] =20
-            action[1] =-20
-        elif action_space == 24:
-            action[0] =20
-            action[1] =-10
-        elif action_space == 25:
-            action[0] =20
-            action[1] = 10
-        elif action_space == 26:
-            action[0] =20
-            action[1] = 20
-        elif action_space == 27:
-            action[0] =20
-            action[1] = 30
+        #version 1 fixed pan, changing speed
+        dist = 1.14+(self.n_actions-1) * 0.28
+        dist = dist -0.06
+        action[0] =math.sqrt((dist*dist*9.8)/((0.105+math.tan(self.fixed_pitch)*dist)*2*math.cos(self.fixed_pitch)*math.cos(self.fixed_pitch)))
+        rospy.logwarn(str(action_space))
+        rospy.logwarn(str(dist))
+        rospy.logwarn(str(action[0]))
+
+        # for i in range(16):
+        #     action[]
+        # if action_space == 0:
+        #     action[0] = 8
+        #     action[1] =  0
+        # elif action_space == 1:
+        #     action[0] = 8
+        #     action[1] =-30
+        # elif action_space == 2:
+        #     action[0] = 8
+        #     action[1] =-20
+        # elif action_space == 3:
+        #     action[0] = 8
+        #     action[1] =-10
+        # elif action_space == 4:
+        #     action[0] = 8
+        #     action[1] = 10
+        # elif action_space == 5:
+        #     action[0] = 8
+        #     action[1] = 20
+        # elif action_space == 6:
+        #     action[0] = 8
+        #     action[1] = 30
+        # elif action_space == 7:
+        #     action[0] = 12
+        #     action[1] =  0
+        # elif action_space == 8:
+        #     action[0] = 12
+        #     action[1] =-30
+        # elif action_space == 9:
+        #     action[0] = 12
+        #     action[1] =-20
+        # elif action_space == 10:
+        #     action[0] = 12
+        #     action[1] =-10
+        # elif action_space == 11:
+        #     action[0] = 12
+        #     action[1] = 10
+        # elif action_space == 12:
+        #     action[0] = 12
+        #     action[1] = 20
+        # elif action_space == 13:
+        #     action[0] = 12
+        #     action[1] = 30
+        # elif action_space == 14:
+        #     action[0] =16
+        #     action[1] =  0
+        # elif action_space == 15:
+        #     action[0] =16
+        #     action[1] =-30
+        # elif action_space == 16:
+        #     action[0] =16
+        #     action[1] =-20
+        # elif action_space == 17:
+        #     action[0] =16
+        #     action[1] =-10
+        # elif action_space == 18:
+        #     action[0] =16
+        #     action[1] = 10
+        # elif action_space == 19:
+        #     action[0] =16
+        #     action[1] = 20
+        # elif action_space == 20:
+        #     action[0] =16
+        #     action[1] = 30
+        # elif action_space == 21:
+        #     action[0] =20
+        #     action[1] =  0
+        # elif action_space == 22:
+        #     action[0] =20
+        #     action[1] =-30
+        # elif action_space == 23:
+        #     action[0] =20
+        #     action[1] =-20
+        # elif action_space == 24:
+        #     action[0] =20
+        #     action[1] =-10
+        # elif action_space == 25:
+        #     action[0] =20
+        #     action[1] = 10
+        # elif action_space == 26:
+        #     action[0] =20
+        #     action[1] = 20
+        # elif action_space == 27:
+        #     action[0] =20
+        #     action[1] = 30
         return action
 
 

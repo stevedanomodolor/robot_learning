@@ -238,7 +238,7 @@ class BallShooterRLUtils(object):
         if(inside):
             reward = 100-(radius*100)
         else:
-            reward = -100
+            reward = 100 - 10*square_dist
         return reward
 
 
