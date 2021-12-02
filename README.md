@@ -157,5 +157,5 @@ rosrun ball_shooter_training vision_main.py
  ```
  5. In the last terminal launch the training node
  ```
-roslaunch ball_shooter_training main.launch
+roslaunch ball_shooter_training main.launch 
  ```
