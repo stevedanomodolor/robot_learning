@@ -228,7 +228,7 @@ class BallShooterRLUtils(object):
         return done
     def get_reward_for_observation(self):
         #check if the ball is inside the area of the bin base
-        radius = 0.14#(0.83941+0.02-0.7166
+        radius = 0.10#(0.83941+0.02-0.7166
         dx = (self.ball_odom.pose.pose.position.x-self.bin_odom.pose.pose.position.x)
         dy = (self.ball_odom.pose.pose.position.y-self.bin_odom.pose.pose.position.y)
         square_dist = dx**2 + dy**2
@@ -236,9 +236,9 @@ class BallShooterRLUtils(object):
         #reward is if the ball is inside but how far it is from the center of the bin base are
         #Todo change
         if(inside):
-            reward = 100-(radius*100)
+            reward = 1000
         else:
-            reward = 100 - 10*square_dist
+            reward = 200 - 10*square_dist
         return reward
 
 

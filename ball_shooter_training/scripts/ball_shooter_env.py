@@ -170,7 +170,7 @@ class BallShooterEnv(gym.Env):
     def convert_action_space_2_robot_action(self, action_space):
         action = [0, 0] # vel_cmd pan
         #version 1 fixed pan, changing speed
-        dist = 1.14+(self.n_actions-1) * 0.28
+        dist = 1.14+(action_space-1) * 0.28
         dist = dist -0.06
         action[0] =math.sqrt((dist*dist*9.8)/((0.105+math.tan(self.fixed_pitch)*dist)*2*math.cos(self.fixed_pitch)*math.cos(self.fixed_pitch)))
         rospy.logwarn(str(action_space))
