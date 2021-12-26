@@ -26,6 +26,18 @@ import matplotlib.pyplot as plt
 import random
 
 
+def normalize_state(max, min, tuple, num_s):
+        # The state is organized as follows,, xxxxxyyyyyy
+        middle = (num_s/2) # find this mid point 
+        prev_state_norm_list = list(tuple)
+        for t in range(n_states_ddpg):
+            if(t <(middle)):
+                prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_x)/(max_pixel_x-min_pixel_x)
+            else:
+                prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_y)/(max_pixel_y-min_pixel_y)
+        prev_state = tuple(prev_state_norm_list)
+
+
 
 if __name__ == '__main__':
 

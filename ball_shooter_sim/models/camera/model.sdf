@@ -54,6 +54,11 @@
             <near>0.1</near>
             <far>100</far>
           </clip>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.007</stddev>
+        </noise>
         </camera>
         <plugin name="cameracontroller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>

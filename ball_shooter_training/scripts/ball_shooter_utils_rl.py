@@ -128,7 +128,7 @@ class BallShooterRLUtils(object):
 
 
 
-        return self.object_info.points
+        return list(self.object_info.points)
     def get_state(self):
         if(0): #not self.bin_in_view()): # TODO fix
             object_state = self.move_pan_to_view_bin()
