@@ -83,10 +83,11 @@ if __name__ == '__main__':
             rospy.loginfo("###################### Start Step...["+str(i)+"]")
             # rospy.loginfo("Action to Perform >> "+str(action))
             state, reward,done,info = env.step(action)
-            rospy.loginfo("END Step...")
-            rospy.loginfo("Reward ==> " + str(reward))
-            rospy.loginfo("state ==> " + str(state))
-            rospy.loginfo("done ==> " + str(done))
+            print("type: state " + str(type(state)))
+            # rospy.loginfo("END Step...")
+            # rospy.loginfo("Reward ==> " + str(reward))
+            # rospy.loginfo("state ==> " + str(state))
+            # rospy.loginfo("done ==> " + str(done))
 
             # cumulated_reward+=reward
             # if(highest_reward < cumulated_reward):

@@ -89,17 +89,7 @@ def obtain_feature(frame):
     opened_image = image_opening(red_image_mask)
     # cropped = cv2.bitwise_and(frame, frame, mask=opened_image)
     x,y,w,h,corners,cX,cY = get_corners(opened_image)
-    A = [int((cX-w/2)),int((cY-(h/2)))]
-    B = [int((cX+w/2)),int((cY-(h/2)))]
-    C = [int((cX-w/2)),int((cY+(h/2)))]
-    D = [int((cX+w/2)),int((cY+(h/2)))]
-    # [A(0), B(0), C(0), D(0), A(1), B(1), C(1), D(1)]
-    state = ([A[0], B[0], C[0], D[0], A[1], B[1], C[1], D[1]])
-    # state_int = [int(x) for x in state]
-
-
-    # print(state)
-    return state,w
+    return [w,h,cX,cY],w
 
 def image_callback(msg):
     #("Received an image!")
@@ -112,11 +102,11 @@ def image_callback(msg):
         data_to_send.object_in_frame = object_detected
         result_pub.publish(data_to_send)
 
-    except CvBridgeError(e):
+    except CvBridgeError as e:
         print(e)
-    # else:
-    #     # Save your OpenCV2 image as a jpeg
-    #     cv2.imwrite('camera_image.jpeg', cv2_img)
+    else:
+        # Save your OpenCV2 image as a jpeg
+        cv2.imwrite('camera_image.jpeg', cv2_img)
 def main():
     rospy.init_node('image_listener')
     # Define your image topic

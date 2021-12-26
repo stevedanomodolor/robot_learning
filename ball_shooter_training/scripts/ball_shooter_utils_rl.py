@@ -47,7 +47,7 @@ class BallShooterRLUtils(object):
         while self.ball_shooter_joint is None and not rospy.is_shutdown():
             try:
                 self.ball_shooter_joint = rospy.wait_for_message("/ball_shooter/joint_states", JointState, timeout==1.0)
-                rospy.loginfo("Current /ball_shooter/joint_states READY ==>" + str(self.ball_shooter_joint))
+                rospy.logdebug("Current /ball_shooter/joint_states READY ==>" + str(self.ball_shooter_joint))
             except:
                 rospy.logerr("Current Current /ball_shooter/joint_states not ready yet, retrying for getting joints")
         # Ball odom
@@ -55,7 +55,7 @@ class BallShooterRLUtils(object):
         while self.ball_odom is None and not rospy.is_shutdown():
             try:
                 self.ball_odom = rospy.wait_for_message("/ball/odom", JointState, timeout==1.0)
-                rospy.loginfo("Current /ball/odom READY ==>" + str(self.ball_odom))
+                rospy.logdebug("Current /ball/odom READY ==>" + str(self.ball_odom))
             except:
                 rospy.logerr("Current Current /ball/odom not ready yet, retrying for getting joints")
         #bin odom
@@ -63,7 +63,7 @@ class BallShooterRLUtils(object):
         while self.bin_odom is None and not rospy.is_shutdown():
             try:
                 self.bin_odom = rospy.wait_for_message("/bin/odom", JointState, timeout==1.0)
-                rospy.loginfo("Current /bin/odom READY ==>" + str(self.bin_odom))
+                rospy.logdebug("Current /bin/odom READY ==>" + str(self.bin_odom))
             except:
                 rospy.logerr("Current Current /bin/odom not ready yet, retrying for getting joints")
         #TODO add
@@ -72,15 +72,15 @@ class BallShooterRLUtils(object):
         # while self.object_state is None and not rospy.is_shutdown():
         #     try:
         #         self.object_state = rospy.wait_for_message("/object_location", object_tracked_info, timeout==1.0)
-        #         rospy.loginfo("Current /object_location READY ==>" + str(self.object_state))
+        #         rospy.logdebug("Current /object_location READY ==>" + str(self.object_state))
         #     except:
         #         rospy.logerr("Current Current /object_location not ready yet, retrying for getting /object_location")
 
-        rospy.loginfo("ALL SENSORS READY")
+        rospy.logdebug("ALL SENSORS READY")
     def check_publisher_connection(self):
         rate = rospy.Rate(10) #10hz
         while(self._ball_shooter_pan_publisher.get_num_connections() == 0 and not rospy.is_shutdown()):
-            rospy.loginfo("No subscribers to _ball_shooter_pan_publisher yet so we wait and try again")
+            rospy.logdebug("No subscribers to _ball_shooter_pan_publisher yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException():
@@ -88,7 +88,7 @@ class BallShooterRLUtils(object):
                 pass
                 rospy.logerr("set_ball_vel_cmd Publisher Connected")
         while(self.set_ball_vel_cmd.get_num_connections() == 0 and not rospy.is_shutdown()):
-            rospy.loginfo("No subscribers to set_ball_vel_cmd yet so we wait and try again")
+            rospy.logdebug("No subscribers to set_ball_vel_cmd yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException():
@@ -96,14 +96,14 @@ class BallShooterRLUtils(object):
                 pass
                 rospy.logerr("set_ball_vel_cmd Publisher Connected")
         while(self.activate_launch_pub.get_num_connections() == 0 and not rospy.is_shutdown()):
-            rospy.loginfo("No subscribers to activate_launch_pub yet so we wait and try again")
+            rospy.logdebug("No subscribers to activate_launch_pub yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException():
                 #this is to avoid error when the world is rested, time when backwards
                 pass
                 rospy.logerr("activate_launch_pub Publisher Connected")
-        rospy.loginfo("All Publishers READY")
+        rospy.logdebug("All Publishers READY")
     #callbacks
     def ball_shooter_joints_callback(self, data):
         self.ball_shooter_joint = data
@@ -123,8 +123,8 @@ class BallShooterRLUtils(object):
     def get_object_state(self):
         #TODO
         while(not self.object_info.object_in_frame):
-            rospy.loginfo("not Found object")
-        rospy.loginfo("Found object")
+            rospy.logwarn("not Found object")
+        #rospy.logdebug("Found object")
 
 
 
@@ -141,7 +141,7 @@ class BallShooterRLUtils(object):
     def move_pan_tilt(self, position):
         joint_position = Float64()
         joint_position.data = position
-        # rospy.loginfo("Moving pan tilt to joint >>" + str(joint_position))
+        # rospy.logdebug("Moving pan tilt to joint >>" + str(joint_position))
         self._ball_shooter_pan_publisher.publish(joint_position)
     def launch_ball(self, vel_cmd):
         ball_linear_velocity = Twist()
@@ -150,7 +150,7 @@ class BallShooterRLUtils(object):
         ball_linear_velocity.linear.x = vel_cmd*(math.cos(yaw)*zAdjust)
         ball_linear_velocity.linear.y = vel_cmd*(math.sin(yaw)*zAdjust)
         ball_linear_velocity.linear.z = vel_cmd*math.sin(self.pitch)
-        #rospy.loginfo(str(ball_linear_velocity))
+        #rospy.logdebug(str(ball_linear_velocity))
         self.set_ball_vel_cmd.publish(ball_linear_velocity)
         dummy_boolean = Bool()
         dummy_boolean.data = True
@@ -171,7 +171,7 @@ class BallShooterRLUtils(object):
             action_completed = True
 
         except rospy.ServiceException as e:
-            print("Service call failed: " +str(e))
+            #print("Service call failed: " +str(e))
             action_completed = False
         return action_completed
     def set_ball_location(self, joint_angle):
@@ -188,7 +188,7 @@ class BallShooterRLUtils(object):
             action_completed = True
 
         except rospy.ServiceException as e:
-            print("Service call failed: " +str(e))
+            #print("Service call failed: " +str(e))
             action_completed = False
         return action_completed
     def move_pan_to_view_bin(self):
@@ -216,9 +216,9 @@ class BallShooterRLUtils(object):
         else:
             return False
     def check_all_services(self):
-        rospy.loginfo("Resetting /gazebo/set_model_state server")
+        rospy.logdebug("Resetting /gazebo/set_model_state server")
         rospy.wait_for_service("/gazebo/set_model_state")
-        rospy.loginfo("All server Ready")
+        rospy.logdebug("All server Ready")
     def observation_check(self):
         height = self.ball_odom.pose.pose.position.z
         if height < 0.06:
@@ -238,7 +238,8 @@ class BallShooterRLUtils(object):
         if(inside):
             reward = 1000
         else:
-            reward = 200 - 10*square_dist
+            reward = 300-100*math.sqrt(square_dist)
+            #print(square_dist)
         return reward
 
 
@@ -251,26 +252,26 @@ class BallShooterRLUtils(object):
 #     object_state = ball_shooter_rl_utils_object.get_state()
 #
 #     #get object state
-#     rospy.loginfo("Object state==>"+str(object_state))
+#     rospy.logdebug("Object state==>"+str(object_state))
 #     #move pan tilt test
 #     current_pose = ball_shooter_rl_utils_object.get_pan_joint()
-#     rospy.loginfo("Moving to joint angle==> " +  str(current_pose+0.5))
+#     rospy.logdebug("Moving to joint angle==> " +  str(current_pose+0.5))
 #     ball_shooter_rl_utils_object.move_pan_tilt(current_pose+0.5)
 #     time.sleep(3)
-#     rospy.loginfo("Moving to joint angle==> " +  str(current_pose-0.5))
+#     rospy.logdebug("Moving to joint angle==> " +  str(current_pose-0.5))
 #     ball_shooter_rl_utils_object.move_pan_tilt(current_pose-0.8)
 #     time.sleep(3)
 #     launch_speed = 2
-#     rospy.loginfo("Launch ball at Speed ==>" + str(launch_speed))
+#     rospy.logdebug("Launch ball at Speed ==>" + str(launch_speed))
 #     ball_shooter_rl_utils_object.launch_ball(vel_cmd=launch_speed)
-#     rospy.loginfo("Setting pan joint to initial position")
+#     rospy.logdebug("Setting pan joint to initial position")
 #     ball_shooter_rl_utils_object.set_init_pose()
-#     rospy.loginfo("Testing bin set location function")
+#     rospy.logdebug("Testing bin set location function")
 #     ball_shooter_rl_utils_object.set_bin_location(x =3,y =0)
 #     done = ball_shooter_rl_utils_object.observation_check()
 #     reward = ball_shooter_rl_utils_object.get_reward_for_observation()
-#     rospy.loginfo("Done==>"+str(done))
-#     rospy.loginfo("Reward==>"+str(reward))
+#     rospy.logdebug("Done==>"+str(done))
+#     rospy.logdebug("Reward==>"+str(reward))
 #
 #
 # if __name__ == "__main__":

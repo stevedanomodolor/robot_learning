@@ -13,15 +13,27 @@ ball_shooter: #namespace
   gamma: 0.8
   epsilon: 0.9
   epsilon_discount: 0.999 # 1098 eps to reach 0.1
-  nepisodes: 10
+  nepisodes: 300
   nsteps: 1
 
   n_actions: 16 # number of actions vel_cmd/ angle in deg
-  low_vel_cmd: 0 # minimum speed
-  high_vel_cmd: 100 # maximum launch speed
-  low_incre_cmd: -180 # move left 180 degrees
-  high_incre_cmd: 180
+  n_actions_ddpg: 2 # number of actions vel_cmd/ angle in deg
+  n_states_ddpg: 8
+  low_vel_cmd: 4 # minimum speed
+  high_vel_cmd: 12 # maximum launch speed
+  low_incre_cmd: -60 # move left 180 degrees
+  high_incre_cmd: 60
 
   fixed_pitch:  0.35 # 20 degress
   n_incre_angle: 7
   n_incre_vel: 4
+
+  #normalize vector
+  max_pixel_x: 640
+  min_pixel_x: 0
+  max_pixel_y: 480
+  min_pixel_y: 0
+  max_w: 1
+  min_w: 0
+  max_h: 1
+  min_h: 0

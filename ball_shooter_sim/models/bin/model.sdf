@@ -3,7 +3,7 @@
   <model name="bin">
     <link name="link">
       <inertial>
-        <mass>0.62731</mass>
+        <mass>5</mass>
         <inertia>
           <ixx>0.004403477783</ixx>
           <ixy>0</ixy>

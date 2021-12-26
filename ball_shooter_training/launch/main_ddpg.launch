@@ -1,0 +1,9 @@
+<launch>
+
+    <!-- Load the parameters for the algorithm -->
+    <rosparam command="load" file="$(find ball_shooter_training)/config/ball_shooter_openai_params.yaml" />
+
+    <!-- Launch the training system -->
+    <node pkg="ball_shooter_training" name="ball_shooter_training_ddpg" type="start_ball_shooter_training_ddpg.py" output="screen" />
+
+</launch>
