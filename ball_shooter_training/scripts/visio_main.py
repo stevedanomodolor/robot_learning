@@ -112,8 +112,8 @@ def image_callback(msg):
         data_to_send.object_in_frame = object_detected
         result_pub.publish(data_to_send)
 
-    except CvBridgeError(e):
-        print(e)
+    except CvBridgeError(Error):
+        print(Error)
     # else:
     #     # Save your OpenCV2 image as a jpeg
     #     cv2.imwrite('camera_image.jpeg', cv2_img)

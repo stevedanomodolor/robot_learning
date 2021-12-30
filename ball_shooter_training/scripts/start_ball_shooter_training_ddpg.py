@@ -25,18 +25,18 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import random
 
-
-def normalize_state(max, min, tuple, num_s):
-        # The state is organized as follows,, xxxxxyyyyyy
-        middle = (num_s/2) # find this mid point 
-        prev_state_norm_list = list(tuple)
-        for t in range(n_states_ddpg):
-            if(t <(middle)):
-                prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_x)/(max_pixel_x-min_pixel_x)
-            else:
-                prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_y)/(max_pixel_y-min_pixel_y)
-        prev_state = tuple(prev_state_norm_list)
-
+#
+# def normalize_state(max, min, tuple, num_s):
+#         # The state is organized as follows,, xxxxxyyyyyy
+#         middle = (num_s/2) # find this mid point
+#         prev_state_norm_list = list(tuple)
+#         for t in range(n_states_ddpg):
+#             if(t <(middle)):
+#                 prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_x)/(max_pixel_x-min_pixel_x)
+#             else:
+#                 prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_y)/(max_pixel_y-min_pixel_y)
+#         prev_state = tuple(prev_state_norm_list)
+#
 
 
 if __name__ == '__main__':
@@ -126,13 +126,13 @@ if __name__ == '__main__':
         prev_state = env.reset()
         #mprove coce, nromalize in one area
         middle = (n_states_ddpg/2)
-        prev_state_norm_list = list(prev_state)
+        # prev_state_norm_list = list(prev_state)
         for t in range(n_states_ddpg):
             if(t <(middle)):
-                prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_x)/(max_pixel_x-min_pixel_x)
+                prev_state[t] = (prev_state[t]-min_pixel_x)/(max_pixel_x-min_pixel_x)
             else:
-                prev_state_norm_list[t] = (prev_state_norm_list[t]-min_pixel_y)/(max_pixel_y-min_pixel_y)
-        prev_state = tuple(prev_state_norm_list)
+                prev_state[t] = (prev_state[t]-min_pixel_y)/(max_pixel_y-min_pixel_y)
+        # prev_state = tuple(prev_state_norm_list)
 
 
         for i in range(nsteps):
@@ -149,16 +149,16 @@ if __name__ == '__main__':
             state, reward, done, info = env.step(action)
             #normalize state vectors
             # middle = (n_states_ddpg/2)
-            state_norm_list = list(state)
+            # state_norm_list = list(state)
             for p in range(n_states_ddpg):
                 if(p <(middle)):
-                    state_norm_list[p] = (state_norm_list[p]-min_pixel_x)/(max_pixel_x-min_pixel_x)
+                    state[p] = (state[p]-min_pixel_x)/(max_pixel_x-min_pixel_x)
                 else:
-                    state_norm_list[p] = (state_norm_list[p]-min_pixel_y)/(max_pixel_y-min_pixel_y)
-            state_norm_tuple = tuple(state_norm_list)
+                    state[p] = (state[p]-min_pixel_y)/(max_pixel_y-min_pixel_y)
+            # state_norm_tuple = tuple(state_norm_list)
 
             #previous state = current state
-            ddpg_object.buffer.record(state_norm_tuple, action, reward, state_norm_tuple)
+            ddpg_object.buffer.record(state, action, reward, state)
             #episode_reward_msg += reward
             ddpg_object.buffer.learn(ddpg_object.actor_model, ddpg_object.critic_model, ddpg_object.target_actor, ddpg_object.target_critic, ddpg_object.actor_optimizer, ddpg_object.critic_optimizer)
             ddpg_object.update_target(ddpg_object.target_actor.variables, ddpg_object.actor_model.variables)

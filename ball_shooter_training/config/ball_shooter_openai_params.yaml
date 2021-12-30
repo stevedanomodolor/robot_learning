@@ -5,7 +5,7 @@ ball_shooter: #namespace
   #bin: used to place the bin in a random position evetytime we reset the world
   max_x_: 5 #maximum position of the xy value
   min_x_: 1 #maximum position of the xy value: this should be higer that the robot size to prevent collision with it
-  max_y_: 3.5 #maximum position of the xy value
+  max_y_: 3 #maximum position of the xy value
   min_y_: 0.3 #maximum position of the xy value: this should be higer that the robot size to prevent collision with it
 
   #Algorithms parameters
@@ -20,7 +20,7 @@ ball_shooter: #namespace
   n_actions_ddpg: 2 # number of actions vel_cmd/ angle in deg
   n_states_ddpg: 8
   low_vel_cmd: 4 # minimum speed
-  high_vel_cmd: 12 # maximum launch speed
+  high_vel_cmd: 8 # maximum launch speed
   low_incre_cmd: -60 # move left 180 degrees
   high_incre_cmd: 60
 
