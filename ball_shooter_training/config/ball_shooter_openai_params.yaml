@@ -21,8 +21,8 @@ ball_shooter: #namespace
   n_states_ddpg: 8
   low_vel_cmd: 4 # minimum speed
   high_vel_cmd: 8 # maximum launch speed
-  low_incre_cmd: -60 # move left 180 degrees
-  high_incre_cmd: 60
+  low_incre_cmd: -30 # move left 180 degrees
+  high_incre_cmd: 30
 
   fixed_pitch:  0.35 # 20 degress
   n_incre_angle: 7

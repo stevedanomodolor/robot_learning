@@ -9,7 +9,7 @@ Inspired by https://keras.io/examples/rl/ddpg_pendulum/
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.getcwd()
-import gym
+#import gym
 import tensorflow as tf
 from tensorflow.keras import layers
 import numpy as np
@@ -159,7 +159,7 @@ class DDPGHER:
         self.model_path = model_path
         self.model_actor = model_actor
         self.model_critic = model_critic
-        self.model_actor_target =model_actor_target
+        self.model_actor_target = model_actor_target
         self.model_critic_target = model_critic_target
         self.actor_model = self.get_actor(self.model_actor)
         self.critic_model = self.get_critic(self.model_critic)
@@ -177,9 +177,6 @@ class DDPGHER:
         self.actor_optimizer = tf.keras.optimizers.Adam(self.actor_lr)
         # initialling buffer
         self.buffer = Buffer(num_states = self.n_states , num_actions = self.n_actions, buffer_capacity=self.buffer_capacity, batch_size=self.batch_size, gamma = self.gamma)
-
-
-
 
     def save_model_weigth(self, model_path, model_name):
         # model_path = os.getcwd() + "./src/ball_shooter/ball_shooter_training/scripts/weigths/"
@@ -207,7 +204,21 @@ class DDPGHER:
         outputs = layers.Dense(1, activation="tanh", kernel_initializer=last_init)(out)
 
         # Our upper bound is 2.0 for Pendulum.
-        outputs =self.action_lower_bound + ((self.action_upper_bound-self.action_lower_bound)/2)*(outputs-[-1,-1])
+        outputs_ = [0,0]
+        outputs_[0] = self.action_lower_bound[0] + ((self.action_upper_bound[0]-self.action_lower_bound[0])/2)
+        outputs_[1] = self.action_lower_bound[1] + ((self.action_upper_bound[1]-self.action_lower_bound[1])/2)
+        print ("outputs: " + str(outputs))
+        print ("outputs_: " + str(outputs_))
+
+        #print("Starting operations...")
+        #print("test1: " + str(outputs_[0]*(outputs_[0]-1.0)))
+        #print("test2: " + str(outputs-[-1.0,-1.0]))
+
+        outputs = outputs_*(outputs-[-1.0,-1.0])
+
+        #outputs[0] = outputs_[0]*(outputs_[0]-1.0)
+        #outputs[1] = outputs_[1]*(outputs_[1]-1.0)
+
         model = tf.keras.Model(inputs, outputs)
 
         if(self.use_model):

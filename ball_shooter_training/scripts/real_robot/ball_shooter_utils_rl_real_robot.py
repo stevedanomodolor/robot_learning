@@ -15,7 +15,9 @@ import cv2
 
 class VisionDetection():
     def __init__(self):
+        print("Trying to connect to camera...")
         self.cap = cv2.VideoCapture('http://192.168.43.1:8080/video')
+        print("Connected.")
     # This function will generate a box containing the desired information
     def __draw_label(self, img, text, pos, bg_color):
         font_face = cv2.FONT_HERSHEY_SIMPLEX
@@ -31,6 +33,7 @@ class VisionDetection():
         cv2.putText(img, text, pos, font_face, scale, color, 1, cv2.LINE_AA)
     # This function will segment the image by color and will create a mask with just the red objects
     def color_segmentation(self,img):
+        print("Red color segmentation...")
         # img = cv2.imread("capture1.png")
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         ## Gen lower mask (0-5) and upper mask (175-180) of RED
@@ -41,8 +44,9 @@ class VisionDetection():
         #cropped = cv2.bitwise_and(img, img, mask=mask)
         return mask
     def image_opening(self,img):
+        print("Opening image for visualization issues...")
         # Generate a morphological opening (an erosion followed by a dilation).
-        kernelSize = [20,20]    # (3, 3), (5, 5), (7, 7)
+        kernelSize = (20,20)    # (3, 3), (5, 5), (7, 7)
         # loop over the kernels sizes
         #for kernelSize in kernelSizes:
             # construct a rectangular kernel from the current size and then
@@ -52,6 +56,7 @@ class VisionDetection():
         return opening
     # This function will return the corners of a binary object
     def get_corners(self,img):
+        print("Getting corners...")
         contours, hierarchy = cv2.findContours(img, 1, 2)
         #print(contours)
         if not(contours):
@@ -75,14 +80,15 @@ class VisionDetection():
 
         return x,y,w,h,cnt,cX,cY,bin_in_frame
     def obtain_feature(self):
+        print("Obtaining features...")
         while(True):
             ret, frame = self.cap.read() # ret is a boolean variable that returns true if the frame is available.
             # frame is an image array vector captured based on the default frames per second defined explicitly or implicitly
             if ret == True:
-                red_image_mask = color_segmentation(frame)
-                opened_image = image_opening(red_image_mask)
+                red_image_mask = self.color_segmentation(frame)
+                opened_image = self.image_opening(red_image_mask)
                 # cropped = cv2.bitwise_and(frame, frame, mask=opened_image)
-                x,y,w,h,corners,cX,cY, bin_in_frame = get_corners(opened_image)
+                x,y,w,h,corners,cX,cY, bin_in_frame = self.get_corners(opened_image)
                 if(bin_in_frame):
                     A = [int((cX-w/2)),int((cY-(h/2)))]
                     B = [int((cX+w/2)),int((cY-(h/2)))]
@@ -110,21 +116,25 @@ class BallShooterRLUtilsRealRobot(object):
         # bufferSize          = 1024
         # UDPSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-        vision_object = VisionDetection()
+        self.vision_object = VisionDetection()
     def get_state(self):
-        print("Obtaining object state")
-        state = vision_object.obtain_feature()
-        print("Obtained object state")
+        print("Obtaining object state...")
+        state = self.vision_object.obtain_feature()
+        print("Object state obtained")
         return state
 
     def move_pan_tilt_launch_ball(self, action):
         #action[0]- velocity
         #action[1] - position
-        payload_out = struct.pack("ff", action[1], action[0])
+        print("Send action through UDP socket...")
+        print("Action to be sent is: " + str(action))
+
+        payload_out = struct.pack("ff", action[0][1], action[0][0])
         #TODO: uncommnet when robot is connected
         # self.UDPSocket.sendto(payload_out, ESP8266AddressPort)
-        payload_in = struct.unpack("ff", payload_out)
-        print("Command sent: " +   str(payload_in))
+        #payload_in = struct.unpack("ff", payload_out)
+        print("Command sent: " +   str(payload_out))
+
 #uncomment to test functions
 # def ball_shooter_rl_systems_test():
 #     # rospy.init_node('ball_shooter_systems_test_node', anonymous=True, log_level=rospy.INFO)
