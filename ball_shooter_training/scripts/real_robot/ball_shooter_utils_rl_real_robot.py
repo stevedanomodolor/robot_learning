@@ -126,10 +126,11 @@ class BallShooterRLUtilsRealRobot(object):
     def move_pan_tilt_launch_ball(self, action):
         #action[0]- velocity
         #action[1] - position
+        action_array = action[0]
         print("Send action through UDP socket...")
-        print("Action to be sent is: " + str(action))
+        print("Action to be sent is: " + str(action_array))
 
-        payload_out = struct.pack("ff", action[0][1], action[0][0])
+        payload_out = struct.pack("ff", action_array[0][1], action_array[0][0])
         #TODO: uncommnet when robot is connected
         # self.UDPSocket.sendto(payload_out, ESP8266AddressPort)
         #payload_in = struct.unpack("ff", payload_out)

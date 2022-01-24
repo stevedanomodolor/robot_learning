@@ -174,10 +174,15 @@ if __name__ == '__main__':
                 action = ddpg_her_object.policy(tf_prev_state, add_noise = True)
             # Recieve state and reward from environment.
             # add noise in the action  only in the speed, inaccuracy in the real robot
-            mu = action[0]
+            print(str(action[0][0]))
+            mu = action[0][0]
             sigma = 0.15*mu
-            vel = np.random.uniform(mu, sigma)
-            action[0] = vel
+            print("---------------------------------------")
+            print("mu" + str(mu)+ " sigma "+str(sigma))
+            print("---------------------------------------")
+
+            vel = np.random.normal(mu, sigma,1)
+            action[0][0] = vel[0]
             state, reward, done, info = env.step(action)
 
             # add succes rate
@@ -278,3 +283,5 @@ if __name__ == '__main__':
     # ddpg_her_object.target_actor.save_weights("./weigths/ballShooter_target_actor.h5")
     # ddpg_her_object.target_critic.save_weights("./weigths/ballShooter_target_critic.h5")
     env.close()
+    rospy.signal_shutdown("shutting down")
+    sys.exit(0)

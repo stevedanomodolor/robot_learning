@@ -216,3 +216,4 @@ if __name__ == '__main__':
     plt.show()
     # Save the weights
     ddpg_her_object.save_model_weigth(model_path,"ballShooter_fixed_bin_fixed_pan_joint_ddpg_her")
+    sys.exit(0)
