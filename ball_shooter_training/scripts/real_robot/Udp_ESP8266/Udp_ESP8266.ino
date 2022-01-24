@@ -108,14 +108,17 @@ void loop() {
     Serial.println(packetBuffer);
     
     String udp_packet_sent = packetBuffer;
-    String sign_angle = udp_packet_sent.substring(0,1); // Creating a substring from the packet sent to obtain information regarding the sign
-    String angle = udp_packet_sent.substring(1,3);
-    String vel_s = udp_packet_sent.substring(3,6);
+    //String sign_angle = udp_packet_sent.substring(0,1); // Creating a substring from the packet sent to obtain information regarding the sign
+    String sign_angle = String('-');
+    String angle = udp_packet_sent.substring(5,12);
+    String vel_s = udp_packet_sent.substring(1,5);
 
     Serial.print("Sign: ");
     Serial.println(sign_angle);
     Serial.print("Angle: ");
     Serial.println(angle);
+    Serial.print("Velocity: ");
+    Serial.println(vel_s);
   
     // ROBOT STEER
     if (sign_angle == negative){
@@ -124,8 +127,8 @@ void loop() {
     else if (sign_angle == positive){
       angle_to_move = 90-angle.toInt()*2;
     }
-    Serial.print("Angle to be sent to servo.write: ");
-    Serial.println(angle_to_move);
+    // Serial.print("Angle to be sent to servo.write: ");
+    // Serial.println(angle_to_move);
     servoMotor.write(angle_to_move);
 
     delay(2000);
@@ -136,7 +139,11 @@ void loop() {
     digitalWrite(in2, HIGH);
     digitalWrite(in3, LOW);
     digitalWrite(in4, HIGH);
-    velocity = vel_s.toInt();
+
+    // PWM to be sent to the enable pins (from 0 to 255)
+    float vel_f = vel_s.toFloat();
+    velocity = map(vel_f,4.0,8.0,100.0,255.0);
+      
     analogWrite(enA, velocity); // Send PWM signal to motor A
     analogWrite(enB, velocity); // Send PWM signal to motor B
 

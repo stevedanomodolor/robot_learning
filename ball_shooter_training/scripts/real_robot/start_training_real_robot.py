@@ -36,7 +36,7 @@ def normalize_state(min_pixel_y,max_pixel_y,max_pixel_x, min_pixel_x, list_array
         return new_array
 
 if __name__ == '__main__':
-    outdir = '/home/guillem/RL_ws/src/robot_learning/ball_shooter_training/scripts'
+    outdir = '/home/gcornella/RL_ws/src/robot_learning/ball_shooter_training/scripts'
     ball_shooter_object = BallShooterRLUtilsRealRobot()
     plotter = LivePlot(outdir)
     signal.signal(signal.SIGINT, signal_handler)
@@ -217,5 +217,5 @@ if __name__ == '__main__':
     ax2.plot(success_rate_list)
     plt.show()
     # Save the weights
-    ddpg_her_object.save_model_weigth(model_path,"ballShooter_fixed_bin_fixed_pan_joint_ddpg_her")
+    ddpg_her_object.save_model_weigth(model_path,"ballShooter_fixed_bin_fixed_pan_joint_ddpg_her_test1G")
     sys.exit(0)

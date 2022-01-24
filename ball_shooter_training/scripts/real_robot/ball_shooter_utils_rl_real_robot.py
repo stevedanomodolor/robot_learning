@@ -112,7 +112,7 @@ class BallShooterRLUtilsRealRobot(object):
         # rospy.Subscriber("/object_location", object_tracked_info, self.object_location_callback)
         # # socket communcation
         # TODO
-        self.ESP8266AddressPort = ("192.168.43.18", 8888)
+        self.ESP8266AddressPort = ("192.168.43.16", 8888)
         self.bufferSize = 1024
         self.UDPSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
@@ -126,13 +126,14 @@ class BallShooterRLUtilsRealRobot(object):
     def move_pan_tilt_launch_ball(self, action):
         #action[0]- velocity
         #action[1] - position
-        action_array = action[0]
+        action_array = action[0].round(2)   # round data to be sent to 2 decimals
+        no_blank = np.char.lstrip(str(action_array))
         print("Send action through UDP socket...")
-        print("Action to be sent is: " + str(action_array))
+        print("Action to be sent is: " + str(no_blank))
 
         # payload_out = struct.pack("ff", action_array[0][1], action_array[0][0])
         #TODO: uncommnet when robot is connected
-        payload_out = action_array
+        payload_out = str(action_array).encode()
         self.UDPSocket.sendto(payload_out, self.ESP8266AddressPort)
         #payload_in = struct.unpack("ff", payload_out)
         print("Command sent: " + str(payload_out))
