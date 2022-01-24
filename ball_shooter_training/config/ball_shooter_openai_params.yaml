@@ -37,3 +37,8 @@ ball_shooter: #namespace
   min_w: 0
   max_h: 1
   min_h: 0
+
+  #reward
+  max_reward: 1000
+  num_steps_to_average: 100
+  max_succes_rate: 0.85

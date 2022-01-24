@@ -38,7 +38,7 @@ class BallShooterRLUtilsDdpgHer(object):
         self.activate_launch_pub = rospy.Publisher("/ball/activate_launch",Bool, queue_size=1)
         #waiting for service to be available
         self.check_all_services()
-        self.check_all_sensors_ready() #TODO fix when alrady active
+        self.check_all_sensors_ready() #TODO fix when already active
         self.check_publisher_connection()
     #check all sensor ready
     def check_all_sensors_ready(self):

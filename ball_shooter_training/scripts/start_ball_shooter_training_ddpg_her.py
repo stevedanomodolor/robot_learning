@@ -12,6 +12,8 @@ import numpy as np
 import time
 from functools import reduce
 import os
+import signal
+import sys
 
 os.getcwd()
 
@@ -27,6 +29,12 @@ import matplotlib.pyplot as plt
 import random
 from successRate import successRate
 #
+shut_down = False
+def signal_handler(sig, frame):
+    print('You pressed Ctrl+C, shutting down!')
+    global shut_down
+    shut_down = True
+
 def normalize_state(min_pixel_y,max_pixel_y,max_pixel_x, min_pixel_x, list_array, num_s):
         # The state is organized as follows,, xxxxxyyyyyy
         middle = (num_s/2) # find this mid point
@@ -60,6 +68,7 @@ if __name__ == '__main__':
     outdir = pkg_path + '/training_results'
     env = wrappers.Monitor(env, outdir, force=True)
     rospy.loginfo("Monitor Wrapper started")
+    signal.signal(signal.SIGINT, signal_handler)
     #plot
     plotter = LivePlot(outdir)
 
@@ -80,6 +89,9 @@ if __name__ == '__main__':
     min_pixel_x = rospy.get_param("/ball_shooter/min_pixel_x")
     max_pixel_y = rospy.get_param("/ball_shooter/max_pixel_y")
     min_pixel_y = rospy.get_param("/ball_shooter/min_pixel_y")
+    num_steps_to_average = rospy.get_param("/ball_shooter/num_steps_to_average")
+    sucess_rate_reached = False
+    max_succes_rate = rospy.get_param("/ball_shooter/max_succes_rate")
     upper_bound = env.action_space.high
     lower_bound = env.action_space.low
 
@@ -115,7 +127,6 @@ if __name__ == '__main__':
                              gamma = gamma, use_model = False,model_path = model_path_, model_actor = model_actor_ ,
                             model_critic = model_critic_ , model_actor_target = model_actor_target_ ,
                             model_critic_target = model_critic_target_ )
-    num_steps_to_average = 5
     success_rate = successRate(num_steps_to_average)
         #
      # Initialises the algorithm that we are going to use for learning
@@ -133,9 +144,12 @@ if __name__ == '__main__':
     min_epsilon_her = 0.01
     decay_rate_her = 0.03
     epsilon_her = 1
+    x = 0
 
     # #start the main training loop:
-    for x in range(nepisodes):
+    # for x in range(nepisodes):
+    while True:
+        x = x +1
         rospy.loginfo("###################### START EPISODE=>" + str(x))
         episode_reward_msg = Float64()
         success_rate_msg = Float64()
@@ -159,11 +173,17 @@ if __name__ == '__main__':
             else:
                 action = ddpg_her_object.policy(tf_prev_state, add_noise = True)
             # Recieve state and reward from environment.
+            # add noise in the action  only in the speed, inaccuracy in the real robot
+            mu = action[0]
+            sigma = 0.15*mu
+            vel = np.random.uniform(mu, sigma)
+            action[0] = vel
             state, reward, done, info = env.step(action)
+
             # add succes rate
             success_rate.put(reward)
             reward_ = reward
-            # apply her using the same tradeoff technique
+            # apply her using the same tradeoff technique: this is not used because it performs poorly
             if 0: #not reward == 1:
                 exp_exp_tradeoff_her = random.uniform(0,1)
                 if(exp_exp_tradeoff_her<epsilon_her):
@@ -195,6 +215,9 @@ if __name__ == '__main__':
             rospy.loginfo("Reward ==> " + str(reward))
             rospy.loginfo("state ==> " + str(state))
             rospy.loginfo("done ==> " + str(done))
+            if success_rate.get_average() > max_succes_rate:
+                print("Sucess rate reached!! shutting down test")
+                sucess_rate_reached = True
 
 
 
@@ -204,6 +227,8 @@ if __name__ == '__main__':
                 break
             # rospy.loginfo("###################### END Step...["+str(i)+"]")
         # reduce epsilon
+        if (sucess_rate_reached==True) or (shut_down==True):
+            break
         epsilon = min_epsilon +(max_epsilon -min_epsilon)*np.exp(-decay_rate*x)
         epsilon_her = min_epsilon_her +(max_epsilon_her -min_epsilon_her)*np.exp(-decay_rate_her*x)
 
@@ -218,7 +243,7 @@ if __name__ == '__main__':
         # rospy.loginfo("Episode * {} * succes rate is ==> {}".format(x, success_rate.get_average()))
 
         avg_reward_list.append(reward_)
-        success_rate_list.append(success_rate.get_average())
+        success_rate_list.append(success_rate.get_average()*100)
 
     #     rospy.loginfo( ("EP: "+str(x+1)+" - [alpha: "+str(round(qlearn.alpha,2))+" - gamma: "+str(round(qlearn.gamma,2))+" - epsilon: "+str(round(qlearn.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
         plotter.plot(avg_reward_list,success_rate_list)
@@ -246,7 +271,7 @@ if __name__ == '__main__':
     # # rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
     # Save the weights
     model_path = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/"
-    ddpg_her_object.save_model_weigth(model_path,"ballShooter_fixed_bin_fixed_pan_joint_ddpg_her")
+    ddpg_her_object.save_model_weigth(model_path,"ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3")
     # ddpg_her_object.actor_model.save_weights("./weigths/ballShooter_actor.h5")
     # ddpg_her_object.critic_model.save_weights("./weigths/ballShooter_critic.h5")
     #

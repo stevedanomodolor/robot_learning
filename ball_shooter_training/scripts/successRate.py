@@ -6,10 +6,10 @@ class successRate:
 
 
     def put(self,reward):
-        if reward == 1000:
+        if int(reward) == 1000:
             self.buffer = np.append(self.buffer, 1)
         else:
             self.buffer = np.append(self.buffer, 0)
     def get_average(self):
-        print("Succes rate buffer:  " + str(self.buffer[-self.num_to_average:]))
+        #print("Succes rate buffer:  " + str(self.buffer[-self.num_to_average:]))
         return np.sum(self.buffer[-self.num_to_average:])/self.num_to_average

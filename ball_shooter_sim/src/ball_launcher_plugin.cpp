@@ -1,3 +1,8 @@
+/*
+*    Stevedan Ogochukwu Omodolor, November 2021
+*    Implementation of the ball launch pluguin
+*/
+
 #include <functional>
 #include <ros/ros.h>
 #include <gazebo/gazebo.hh>

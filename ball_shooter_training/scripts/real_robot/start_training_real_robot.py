@@ -10,14 +10,19 @@ import numpy as np
 import time
 from functools import reduce
 import os
-
+import signal
+import sys
 os.getcwd()
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import random
 
-
+shut_down = False
+def signal_handler(sig, frame):
+    print('You pressed Ctrl+C, shutting down!')
+    global shut_down
+    shut_down = True
 
 def normalize_state(min_pixel_y,max_pixel_y,max_pixel_x, min_pixel_x, list_array, num_s):
         # The state is organized as follows,, xxxxxyyyyyy
@@ -34,6 +39,8 @@ if __name__ == '__main__':
     outdir = '/home/guillem/Reinforcement_Learning_WS/src/robot_learning/ball_shooter_training/scripts/outdir/'
     ball_shooter_object = BallShooterRLUtilsRealRobot()
     plotter = LivePlot(outdir)
+    signal.signal(signal.SIGINT, signal_handler)
+
 
     last_time_steps = numpy.ndarray(0)
     # in config file
@@ -49,6 +56,8 @@ if __name__ == '__main__':
     min_pixel_x = 0
     max_pixel_y = 480
     min_pixel_y = 0
+    max_succes_rate = 0.85
+
 
     vel_max = 8
     vel_min = 4
@@ -176,6 +185,11 @@ if __name__ == '__main__':
             print("Reward ==> " + str(reward))
             print("state ==> " + str(state))
             print("done ==> " + str(done))
+            if success_rate.get_average() > max_succes_rate:
+                print("Sucess rate reached!! shutting down test")
+                sucess_rate_reached = True
+        if (sucess_rate_reached==True) or (shut_down==True):
+            break
         epsilon = min_epsilon +(max_epsilon -min_epsilon)*np.exp(-decay_rate*x)
         # epsilon_her = min_epsilon_her +(max_epsilon_her -min_epsilon_her)*np.exp(-decay_rate_her*x)
         m, s = divmod(int(time.time() - start_time), 60)

@@ -129,7 +129,7 @@ class BallShooterEnvDdpg(gym.Env):
         # cord = self.generate_random_bin_position()
         # x = cord[0]
         # y = cord[1]
-        #version 1 training fix bin location to themiddle fo the scrren
+        #version 1 training fix bin location to the middle fo the scrren
         x = 3.1
         y = 0
         rospy.logdebug("Setting at location ==> x: " + str(x) + " y: " + str(y))
