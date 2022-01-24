@@ -157,10 +157,10 @@ class DDPGHER:
         self.noise_object = OUActionNoise(mean=np.zeros(self.n_actions), std_deviation=self.std_dev * np.ones(self.n_actions))
         self.use_model = use_model
         self.model_path = model_path
-        self.model_actor = model_actor
-        self.model_critic = model_critic
-        self.model_actor_target = model_actor_target
-        self.model_critic_target = model_critic_target
+        self.model_actor = model_path+model_actor
+        self.model_critic = model_path+model_critic
+        self.model_actor_target = model_path+model_actor_target
+        self.model_critic_target = model_path+model_critic_target
         self.actor_model = self.get_actor(self.model_actor)
         self.critic_model = self.get_critic(self.model_critic)
 
@@ -194,7 +194,7 @@ class DDPGHER:
             a.assign(b * self.tau + a * (1 - self.tau))
 
 
-    def get_actor(self, model_weigth):
+    def get_actor(self, model_weight):
         # Initialize weights between -3e-3 and 3-e3
         last_init = tf.random_uniform_initializer(minval=-0.003, maxval=0.003)
 
@@ -226,7 +226,7 @@ class DDPGHER:
         return model
 
 
-    def get_critic(self,model_weigth):
+    def get_critic(self,model_weight):
         # State as input
         state_input = layers.Input(shape=(self.n_states))
         state_out = layers.Dense(16, activation="relu")(state_input)

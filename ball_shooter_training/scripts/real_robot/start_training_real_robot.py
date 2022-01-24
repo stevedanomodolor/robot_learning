@@ -36,7 +36,7 @@ def normalize_state(min_pixel_y,max_pixel_y,max_pixel_x, min_pixel_x, list_array
         return new_array
 
 if __name__ == '__main__':
-    outdir = '/home/guillem/Reinforcement_Learning_WS/src/robot_learning/ball_shooter_training/scripts/outdir/'
+    outdir = '/home/guillem/RL_ws/src/robot_learning/ball_shooter_training/scripts'
     ball_shooter_object = BallShooterRLUtilsRealRobot()
     plotter = LivePlot(outdir)
     signal.signal(signal.SIGINT, signal_handler)
@@ -79,21 +79,23 @@ if __name__ == '__main__':
     tau = 0.005
     # To store reward history of each episode
     ep_reward_list = []
-    # To store average reward history of last few episodes
+    # To store average rewa rd history of last few episodes
     avg_reward_list = []
     # to store the succes rate history
     success_rate_list = []
+    success_rate_reached = False
     # #initialing ddpg object
-    model_path_ = "/home/guillem/Reinforcement_Learning_WS/src/robot_learning/ball_shooter_training/scripts/weigths/";
-    model_actor_ = "not in use"
-    model_critic_ = "not in use"
-    model_actor_target_ = "not in use"
-    model_critic_target_ = "not in use"
+    model_path_ = "/home/gcornella/RL_ws/src/robot_learning/ball_shooter_training/scripts/weigths/"
+    model_actor_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_actor.h5"
+    model_critic_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_critic.h5"
+    model_actor_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_target_actor.h5"
+    model_critic_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_target_critic.h5"
+
     ddpg_her_object = ddpg_her.DDPGHER(n_actions = n_actions_ddpg, n_states = n_states_ddpg,
                             lower_bound = lower_bound, upper_bound = upper_bound,
                             noise_std_dev = std_dev, critic_lr = critic_lr,actor_lr = actor_lr,
                             buffer_capacity = buffer_capacity, batch_size = batch_size, tau = tau,
-                            gamma = gamma, use_model = False,model_path = model_path_, model_actor = model_actor_ ,
+                            gamma = gamma, use_model = True, model_path = model_path_, model_actor = model_actor_ ,
                             model_critic = model_critic_ , model_actor_target = model_actor_target_ ,
                             model_critic_target = model_critic_target_ )
 
@@ -186,9 +188,9 @@ if __name__ == '__main__':
             print("state ==> " + str(state))
             print("done ==> " + str(done))
             if success_rate.get_average() > max_succes_rate:
-                print("Sucess rate reached!! shutting down test")
-                sucess_rate_reached = True
-        if (sucess_rate_reached==True) or (shut_down==True):
+                print("Success rate reached!! shutting down test")
+                success_rate_reached = True
+        if (success_rate_reached==True) or (shut_down==True):
             break
         epsilon = min_epsilon +(max_epsilon -min_epsilon)*np.exp(-decay_rate*x)
         # epsilon_her = min_epsilon_her +(max_epsilon_her -min_epsilon_her)*np.exp(-decay_rate_her*x)
