@@ -188,7 +188,7 @@ class DDPGHER:
         self.buffer = Buffer(num_states = self.n_states , num_actions = self.n_actions, buffer_capacity=self.buffer_capacity, batch_size=self.batch_size, gamma = self.gamma)
 
         #changes made TODO
-        self.exploration_noise = OUNoise(self.n_actions)
+        # self.exploration_noise = OUNoise(self.n_actions)
 
 
 

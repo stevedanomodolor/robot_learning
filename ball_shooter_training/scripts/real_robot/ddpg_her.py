@@ -143,8 +143,10 @@ class DDPGHER:
         # initiing variables
         self.n_actions = n_actions
         self.n_states = n_states
-        self.action_lower_bound = lower_bound
-        self.action_upper_bound = upper_bound
+        # self.action_lower_bound = lower_bound
+        # self.action_upper_bound = upper_bound
+        self.action_lower_bound = [-1,-1]
+        self.action_upper_bound = [1,1]
         self.std_dev = noise_std_dev
         self.critic_lr = critic_lr
         self.actor_lr = actor_lr
@@ -201,20 +203,20 @@ class DDPGHER:
         inputs = layers.Input(shape=(self.n_states,))
         out = layers.Dense(256, activation="relu")(inputs)
         out = layers.Dense(256, activation="relu")(out)
-        outputs = layers.Dense(1, activation="tanh", kernel_initializer=last_init)(out)
+        outputs = layers.Dense(self.n_actions, activation="tanh", kernel_initializer=last_init)(out)
 
         # Our upper bound is 2.0 for Pendulum.
-        outputs_ = [0,0]
-        outputs_[0] = self.action_lower_bound[0] + ((self.action_upper_bound[0]-self.action_lower_bound[0])/2)
-        outputs_[1] = self.action_lower_bound[1] + ((self.action_upper_bound[1]-self.action_lower_bound[1])/2)
-        print ("outputs: " + str(outputs))
-        print ("outputs_: " + str(outputs_))
+        # outputs_ = [0,0]
+        # outputs_[0] = self.action_lower_bound[0] + ((self.action_upper_bound[0]-self.action_lower_bound[0])/2)
+        # outputs_[1] = self.action_lower_bound[1] + ((self.action_upper_bound[1]-self.action_lower_bound[1])/2)
+        # print ("outputs: " + str(outputs))
+        # print ("outputs_: " + str(outputs_))
 
         #print("Starting operations...")
         #print("test1: " + str(outputs_[0]*(outputs_[0]-1.0)))
         #print("test2: " + str(outputs-[-1.0,-1.0]))
 
-        outputs = outputs_*(outputs-[-1.0,-1.0])
+        # outputs = outputs_*(outputs-[-1.0,-1.0])
 
         #outputs[0] = outputs_[0]*(outputs_[0]-1.0)
         #outputs[1] = outputs_[1]*(outputs_[1]-1.0)
@@ -257,9 +259,11 @@ class DDPGHER:
         # norm = np.linalg.norm(state__)
         # state_norm = state/norm
         # print(state_norm)
+        # sampled_actions = tf.squeeze(self.actor_model(state))
+        # print("sampled_actions(Before noise)")
+        # print(str(sampled_actions.numpy()))
         sampled_actions = tf.squeeze(self.actor_model(state))
-        print("sampled_actions(Before noise)")
-        print(str(sampled_actions.numpy()))
+        print("sampled_actions(Before noise): " +  str(sampled_actions.numpy()))
         # noise = self.noise_object()
         # Adding noise to action
         #print("----------------------")
@@ -273,11 +277,14 @@ class DDPGHER:
         # print("scaled action " + str(scaled_action))
         #
         #try guassian noise
-        noise_guas = tf.random.normal(shape = [self.n_actions], mean = [0,0], stddev = self.std_dev)
+        # noise_guas = tf.random.normal(shape = [self.n_actions], mean = [0,0], stddev = self.std_dev)
+        noise_guas = np.random.normal(0, 1, self.n_actions)
         if(add_noise == True):
-            print("Adding noise")
+            # print("Adding noise")
+            # sampled_actions = sampled_actions.numpy() + noise_guas
+            # print(str(noise_guas))
             sampled_actions = sampled_actions.numpy() + noise_guas
-            print(str(noise_guas))
+            print("Added noise: " + str(noise_guas))
         else:
             sampled_actions = sampled_actions.numpy()
 
@@ -292,8 +299,8 @@ class DDPGHER:
 
         # We make sure action is within bounds
         legal_action = np.clip(sampled_actions, self.action_lower_bound, self.action_upper_bound)
-        print("Final legal_action")
-        print(str(legal_action))
+        # print("Final legal_action")
+        # print(str(legal_action))
         #print("clip action")
         #print(str(sampled_actions))
 

@@ -106,7 +106,6 @@ if __name__ == '__main__':
     max_pixel_y = rospy.get_param("/ball_shooter/max_pixel_y")
     min_pixel_y = rospy.get_param("/ball_shooter/min_pixel_y")
     num_steps_to_average = rospy.get_param("/ball_shooter/num_steps_to_average")
-    sucess_rate_reached = False
     max_succes_rate = rospy.get_param("/ball_shooter/max_succes_rate")
     upper_bound = env.action_space.high
     lower_bound = env.action_space.low
@@ -130,6 +129,7 @@ if __name__ == '__main__':
     avg_reward_list = []
     # to store the succes rate history
     success_rate_list = []
+    sucess_rate_reached = False
     # #initialing ddpg object
     model_path_ = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/";
     model_actor_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_actor.h5"
@@ -221,6 +221,7 @@ if __name__ == '__main__':
             # add succes rate
             success_rate.put(reward)
             reward_ = reward
+            store_data["Relabeled"].append(0)
             # apply her using the same tradeoff technique: this is not used because it performs poorly
             if int(reward) != 0:
                 exp_exp_tradeoff_her = random.uniform(0,1)
@@ -238,10 +239,15 @@ if __name__ == '__main__':
                         reward = 0
                         state = relabled_state
                         store_data["Relabeled"].append(1)
+                    else:
+                        print("Position not feasible no relableing")
+                        store_data["Relabeled"].append(0)
+                else:
+                    store_data["Relabeled"].append(0)
+            else:
+                store_data["Relabeled"].append(0)
                         # print("Inside ----- previous state: "+ str(prev_state))
                         # print("Inside -----  state: "+ str(state))
-                    else:
-                        store_data["Relabeled"].append(0)
             store_data["reward"].append(reward)
             store_data["success_rate"].append(success_rate.get_average()*100)
 
