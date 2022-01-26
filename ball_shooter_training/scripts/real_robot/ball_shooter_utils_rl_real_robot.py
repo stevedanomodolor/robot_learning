@@ -1,5 +1,5 @@
 import time
-import rospy
+#import rospy
 import math
 import copy
 import numpy
@@ -104,17 +104,17 @@ class VisionDetection():
 # Class to interact with gazebo
 class BallShooterRLUtilsRealRobot(object):
     def __init__(self):
-        payload_out = bytes()
-        payload_out = struct.Struct("ff").size
+        # payload_out = bytes()
+        # payload_out = struct.Struct("ff").size
 
 
         #define pfixed pitch value
         # rospy.Subscriber("/object_location", object_tracked_info, self.object_location_callback)
         # # socket communcation
         # TODO
-        # ESP8266AddressPort   = ("192.168.43.16", 8888)
-        # bufferSize          = 1024
-        # UDPSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.ESP8266AddressPort = ("192.168.43.16", 8888)
+        self.bufferSize = 1024
+        self.UDPSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
         self.vision_object = VisionDetection()
     def get_state(self):
@@ -126,15 +126,17 @@ class BallShooterRLUtilsRealRobot(object):
     def move_pan_tilt_launch_ball(self, action):
         #action[0]- velocity
         #action[1] - position
-        action_array = action[0]
+        action_array = action[0].round(2)   # round data to be sent to 2 decimals
+        no_blank = np.char.lstrip(str(action_array))
         print("Send action through UDP socket...")
-        print("Action to be sent is: " + str(action_array))
+        print("Action to be sent is: " + str(no_blank))
 
-        payload_out = struct.pack("ff", action_array[0][1], action_array[0][0])
+        # payload_out = struct.pack("ff", action_array[0][1], action_array[0][0])
         #TODO: uncommnet when robot is connected
-        # self.UDPSocket.sendto(payload_out, ESP8266AddressPort)
+        payload_out = str(action_array).encode()
+        self.UDPSocket.sendto(payload_out, self.ESP8266AddressPort)
         #payload_in = struct.unpack("ff", payload_out)
-        print("Command sent: " +   str(payload_out))
+        print("Command sent: " + str(payload_out))
 
 #uncomment to test functions
 # def ball_shooter_rl_systems_test():
