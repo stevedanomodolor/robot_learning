@@ -130,7 +130,10 @@ class BallShooterEnvDdpgHer(gym.Env):
         # x = cord[0]
         # y = cord[1]
         #version 1 training fix bin location to themiddle fo the scrren
-        x = 3.1
+        # x = 3.1
+        # y = 0
+        #version 2 training fix bin location to themiddle fo the scrren
+        x = 2
         y = 0
         rospy.logdebug("Setting at location ==> x: " + str(x) + " y: " + str(y))
         self.ball_shooter_object.set_bin_location(x=x,y=y)

@@ -15,6 +15,7 @@ import os
 import signal
 import sys
 import copy
+import json
 
 os.getcwd()
 
@@ -46,6 +47,20 @@ def normalize_state(min_pixel_y,max_pixel_y,max_pixel_x, min_pixel_x, list_array
             else:
                 new_array.append((list_array[t]-min_pixel_y)/(max_pixel_y-min_pixel_y))
         return new_array
+# def scale_action(upper_bound_ac,lower_bound_ac,range, action):
+#         rescale_action = copy.deepcopy(action)
+#         rescale_action[0][0] =  np.interp(action[0][0],(lower_bound_ac[0],upper_bound_ac[0]),(range[0],range[1]))
+#         rescale_action[0][1] =  np.interp(action[0][1],(lower_bound_ac[1],upper_bound_ac[1]),(range[0],range[1]))
+#         return rescale_action
+def scale_action(upper_bound_ac,lower_bound_ac,range, action):
+        rescale_action = copy.deepcopy(action)
+        rescale_action[0][0] =  np.interp(action[0][0],(range[0],range[1]),(lower_bound_ac[0],upper_bound_ac[0]))
+        rescale_action[0][1] =  np.interp(action[0][1],(range[0],range[1]),(lower_bound_ac[1],upper_bound_ac[1]))
+        return rescale_action
+
+
+
+
 
 
 
@@ -117,10 +132,10 @@ if __name__ == '__main__':
     success_rate_list = []
     # #initialing ddpg object
     model_path_ = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/";
-    model_actor_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_actor.h5"
-    model_critic_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_critic.h5"
-    model_actor_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_target_actor.h5"
-    model_critic_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3_target_critic.h5"
+    model_actor_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_actor.h5"
+    model_critic_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_critic.h5"
+    model_actor_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_target_actor.h5"
+    model_critic_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_target_critic.h5"
     ddpg_her_object = ddpg_her.DDPGHER(n_actions = n_actions_ddpg, n_states = n_states_ddpg,
                             lower_bound = lower_bound, upper_bound = upper_bound,
                             noise_std_dev = std_dev, critic_lr = critic_lr,actor_lr = actor_lr,
@@ -137,15 +152,16 @@ if __name__ == '__main__':
 
     max_epsilon = 1.0
     min_epsilon = 0.01
-    decay_rate = 0.01
+    decay_rate = 0.008
     epsilon = 1
 
     # for the HER algorithm
     max_epsilon_her = 1.0
     min_epsilon_her = 0.01
-    decay_rate_her = 0.03
+    decay_rate_her = 0.008
     epsilon_her = 1
     x = 0
+    store_data = {"reward":[0], "success_rate": [0], "Relabeled": [0]}
 
     # #start the main training loop:
     # for x in range(nepisodes):
@@ -190,29 +206,44 @@ if __name__ == '__main__':
             # #vel = np.random.normal(mu, sigma,1)
             # #action_real[0][0] = vel[0]
             # print("vel real"+  str(vel[0]))
-            state, reward, done, info = env.step(action)
+            # rescaled action to real pyhiscal robot
+            #step 1 restrict position to zero
+            action[0][1] = 0
+            rescaled_action = scale_action(upper_bound,lower_bound,[-1,1], action)
+            print("Normal action: " +  str(action))
+            print("Rescaled action: " +  str(rescaled_action))
+
+            state, reward, done, info = env.step(rescaled_action)
+            #rescale the action
+            # rescaled_action = scale_action(upper_bound,lower_bound,[-1,1], action)
+
 
             # add succes rate
             success_rate.put(reward)
             reward_ = reward
             # apply her using the same tradeoff technique: this is not used because it performs poorly
-            if 0: #not reward == 1:
+            if int(reward) != 0:
                 exp_exp_tradeoff_her = random.uniform(0,1)
                 if(exp_exp_tradeoff_her<epsilon_her):
-                    rospy.loginfo("HER: relabeling goal")
                     # we put the bin at the location of the ball
                     ball_location = env.ball_shooter_object.get_ball_pose()
                     if(ball_location.pose.pose.position.x > 0.7):
-                    # set the bin location to the new goal
-                        env.ball_shooter_object.set_bin_location(ball_location.pose.pose.position.x, ball_location.pose.pose.position.y)
+                        rospy.loginfo("HER: relabeling goal")
+                        # set the bin location to the new goal
+                        env.ball_shooter_object.set_bin_location(ball_location.pose.pose.position.x-0.15, ball_location.pose.pose.position.y)
                         time.sleep(2)
                         # get newly labeled state
                         relabled_state = env.ball_shooter_object.get_state()
                         # relabel the data
-                        reward = 1
+                        reward = 0
                         state = relabled_state
+                        store_data["Relabeled"].append(1)
                         # print("Inside ----- previous state: "+ str(prev_state))
                         # print("Inside -----  state: "+ str(state))
+                    else:
+                        store_data["Relabeled"].append(0)
+            store_data["reward"].append(reward)
+            store_data["success_rate"].append(success_rate.get_average()*100)
 
             state_norm = normalize_state(min_pixel_y,max_pixel_y,max_pixel_x, min_pixel_x, state, n_states_ddpg)
             #previous state = current state
@@ -223,7 +254,7 @@ if __name__ == '__main__':
             ddpg_her_object.update_target(ddpg_her_object.target_actor.variables, ddpg_her_object.actor_model.variables)
             ddpg_her_object.update_target(ddpg_her_object.target_critic.variables, ddpg_her_object.critic_model.variables)
 
-            rospy.loginfo("Action to generated by RL >> "+str(action))
+            # rospy.loginfo("Action to generated by RL >> "+str(action))
             rospy.loginfo("Reward ==> " + str(reward))
             rospy.loginfo("state ==> " + str(state))
             rospy.loginfo("done ==> " + str(done))
@@ -247,14 +278,14 @@ if __name__ == '__main__':
         # print("epsilon: " + str(epsilon))
         m, s = divmod(int(time.time() - start_time), 60)
         h, m = divmod(m, 60)
-        episode_reward_msg.data = reward_
+        episode_reward_msg.data = reward
         episode_reward_pub.publish(episode_reward_msg)
         success_rate_msg.data = success_rate.get_average()
 
         # rospy.loginfo("Episode * {} * Avg Reward is ==> {}".format(x, reward_))
         # rospy.loginfo("Episode * {} * succes rate is ==> {}".format(x, success_rate.get_average()))
 
-        avg_reward_list.append(reward_)
+        avg_reward_list.append(reward)
         success_rate_list.append(success_rate.get_average()*100)
 
     #     rospy.loginfo( ("EP: "+str(x+1)+" - [alpha: "+str(round(qlearn.alpha,2))+" - gamma: "+str(round(qlearn.gamma,2))+" - epsilon: "+str(round(qlearn.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
@@ -267,6 +298,14 @@ if __name__ == '__main__':
     # plt.xlabel("Episode")
     # plt.ylabel("Avg. Epsiodic Reward")
     # plt.show()
+    model_path = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/"
+    model_path_training_result = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/training_results/"
+
+    model_name = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v6_x_2_y_0"
+    print("Storing training data to file")
+    # print(store_data)
+    with open(model_path_training_result+model_name+".json", "w") as fp:
+        json.dump(store_data,fp)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.suptitle('Reward/succes rate')
@@ -278,12 +317,16 @@ if __name__ == '__main__':
     ax2.plot(success_rate_list)
     plt.show()
 
+
     #
     # #print("Parameters: a="+str)
     # # rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
     # Save the weights
-    model_path = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/"
-    ddpg_her_object.save_model_weigth(model_path,"ballShooter_fixed_bin_fixed_pan_joint_ddpg_v3")
+
+
+
+
+    ddpg_her_object.save_model_weigth(model_path,model_name)
     # ddpg_her_object.actor_model.save_weights("./weigths/ballShooter_actor.h5")
     # ddpg_her_object.critic_model.save_weights("./weigths/ballShooter_critic.h5")
     #

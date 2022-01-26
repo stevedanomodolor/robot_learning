@@ -6,7 +6,7 @@ class successRate:
 
 
     def put(self,reward):
-        if int(reward) == 1000:
+        if int(reward) == 0:
             self.buffer = np.append(self.buffer, 1)
         else:
             self.buffer = np.append(self.buffer, 0)

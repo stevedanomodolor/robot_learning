@@ -235,13 +235,17 @@ class BallShooterRLUtils(object):
         inside = square_dist <= radius ** 2
         #reward is if the ball is inside but how far it is from the center of the bin base are
         #Todo change
-        if(inside):
-            reward = 1000
-        else:
-            reward = 300-100*math.sqrt(square_dist)
-            #print(square_dist)
+        # if(inside):
+        #     reward = 1000
+        # else:
+        #     reward = 300-100*math.sqrt(square_dist)
+        #     #print(square_dist)
         return reward
-
+        if(inside):
+            reward = 1
+        else:
+            reward = -1
+        return reward
 
 
 
