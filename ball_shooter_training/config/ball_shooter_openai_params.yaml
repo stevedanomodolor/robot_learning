@@ -41,5 +41,5 @@ ball_shooter: #namespace
   #reward
   max_reward: 1000
   num_steps_to_average: 100
-  max_succes_rate: 0.98
+  max_succes_rate: 1 # 0.98
   num_steps_to_average_real_robot: 100

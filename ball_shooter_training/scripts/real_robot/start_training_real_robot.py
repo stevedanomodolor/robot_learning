@@ -273,6 +273,7 @@ if __name__ == '__main__':
     # print(store_data)
     with open(model_path_training_result+model_name+".json", "w") as fp:
         json.dump(store_data,fp)
+    
     fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.suptitle('Reward/succes rate')
     ax1.set_title("Reward")

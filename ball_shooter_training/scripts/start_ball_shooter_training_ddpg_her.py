@@ -132,10 +132,10 @@ if __name__ == '__main__':
     sucess_rate_reached = False
     # #initialing ddpg object
     model_path_ = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/";
-    model_actor_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_actor.h5"
-    model_critic_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_critic.h5"
-    model_actor_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_target_actor.h5"
-    model_critic_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v5_target_critic.h5"
+    model_actor_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v6_x_2_y_0_actor.h5"
+    model_critic_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v6_x_2_y_0_critic.h5"
+    model_actor_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v6_x_2_y_0_target_actor.h5"
+    model_critic_target_ = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v6_x_2_y_0_target_critic.h5"
     ddpg_her_object = ddpg_her.DDPGHER(n_actions = n_actions_ddpg, n_states = n_states_ddpg,
                             lower_bound = lower_bound, upper_bound = upper_bound,
                             noise_std_dev = std_dev, critic_lr = critic_lr,actor_lr = actor_lr,
@@ -144,7 +144,10 @@ if __name__ == '__main__':
                             model_critic = model_critic_ , model_actor_target = model_actor_target_ ,
                             model_critic_target = model_critic_target_ )
     success_rate = successRate(num_steps_to_average)
-        #
+    model_path = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/"
+    model_path_training_result = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/training_results/"
+
+    model_name = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v6_x_4_y_0"
      # Initialises the algorithm that we are going to use for learning
     start_time = time.time()
 
@@ -161,6 +164,7 @@ if __name__ == '__main__':
     decay_rate_her = 0.008
     epsilon_her = 1
     x = 0
+    save_threshold = 50
     store_data = {"reward":[0], "success_rate": [0], "Relabeled": [0]}
 
     # #start the main training loop:
@@ -211,7 +215,9 @@ if __name__ == '__main__':
             action[0][1] = 0
             rescaled_action = scale_action(upper_bound,lower_bound,[-1,1], action)
             print("Normal action: " +  str(action))
+            rescaled_action[0][0] = 7
             print("Rescaled action: " +  str(rescaled_action))
+
 
             state, reward, done, info = env.step(rescaled_action)
             #rescale the action
@@ -267,6 +273,13 @@ if __name__ == '__main__':
             if success_rate.get_average() > max_succes_rate:
                 print("Sucess rate reached!! shutting down test")
                 sucess_rate_reached = True
+            if(x ==save_threshold):
+                print("Storing training data to file")
+                with open(model_path_training_result+model_name+".json", "w") as fp:
+                    json.dump(store_data,fp)
+                ddpg_her_object.save_model_weigth(model_path,model_name)
+                save_threshold= save_threshold+ 50
+
 
 
 
@@ -304,14 +317,12 @@ if __name__ == '__main__':
     # plt.xlabel("Episode")
     # plt.ylabel("Avg. Epsiodic Reward")
     # plt.show()
-    model_path = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/scripts/weigths/"
-    model_path_training_result = "/home/stevedan/RL/RL_ws/src/ball_shooter/ball_shooter_training/training_results/"
 
-    model_name = "ballShooter_fixed_bin_fixed_pan_joint_ddpg_v6_x_2_y_0"
     print("Storing training data to file")
     # print(store_data)
     with open(model_path_training_result+model_name+".json", "w") as fp:
         json.dump(store_data,fp)
+    ddpg_her_object.save_model_weigth(model_path,model_name)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.suptitle('Reward/succes rate')
@@ -332,7 +343,6 @@ if __name__ == '__main__':
 
 
 
-    ddpg_her_object.save_model_weigth(model_path,model_name)
     # ddpg_her_object.actor_model.save_weights("./weigths/ballShooter_actor.h5")
     # ddpg_her_object.critic_model.save_weights("./weigths/ballShooter_critic.h5")
     #
