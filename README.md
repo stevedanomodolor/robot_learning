@@ -8,7 +8,7 @@
 * [Usage](#Usage)
 
 ## General Info
-THe code contains an implementation of robot learning algorithm to teach a ball shooter to shoot a ball using the simulation gazebo
+See [here](https://github.com/gcornella/Ball-Launcher-Reinforcement-Learning) on a full description of the project. The code contains an implementation of robot learning algorithm to teach a ball shooter to shoot a ball using the simulation gazebo.
 
 ## Code specification
 **TODO: Explain later**
